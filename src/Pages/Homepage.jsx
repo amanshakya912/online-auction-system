@@ -7,7 +7,7 @@ const Homepage = () => {
         <>
             <Header/>
                 <Banner />
-                <div>Hello</div>
+                {/* <div>Hello</div> */}
             <Footer/>
         </>
     )
