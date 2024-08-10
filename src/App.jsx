@@ -6,7 +6,6 @@ import Loader from "./Components/Loader"
 const App = () => {
   return (
     <>
-      <div className="container mx-auto relative">
         <BrowserRouter basename="">
           <Suspense fallback={<Loader />}>
             <Routes>
@@ -14,7 +13,6 @@ const App = () => {
             </Routes>
           </Suspense>
         </BrowserRouter>
-      </div>
     </>
   )
 }

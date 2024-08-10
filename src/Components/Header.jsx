@@ -1,7 +1,7 @@
 const Header = () => {
     return (
         <>
-            <div className="absolute w-full">
+            <div className="w-full container mx-auto relative">
                 <div className="flex justify-between">
                     <div>
                         Logo
