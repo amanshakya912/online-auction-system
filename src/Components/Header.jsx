@@ -15,7 +15,9 @@ const Header = () => {
                             <Link to={'/'}>
                                 <li className={`${pathname == '/' ? 'text-[#6c3c3c] font-bold' : 'hover:text-[#6c3c3c]'}`}>Home</li>
                             </Link>
-                            <li className={`${pathname == '/browse-auction' ? 'text-[#6c3c3c] font-bold' : 'hover:text-[#6c3c3c]'}`}>Browse Auctions</li>
+                            <Link to={'/browse-auction'}>
+                                <li className={`${pathname == '/browse-auction' ? 'text-[#6c3c3c] font-bold' : 'hover:text-[#6c3c3c]'}`}>Browse Auctions</li>
+                            </Link>
                             <Link to={'/create-auction'}>
                                 <li className={`${pathname == '/create-auction' ? 'text-[#6c3c3c] font-bold' : 'hover:text-[#6c3c3c]'}`}>Create Auction</li>
                             </Link>
