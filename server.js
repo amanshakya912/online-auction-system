@@ -1,12 +1,15 @@
 const express = require('express')
 const mongoose = require('mongoose')
 const dotenv = require('dotenv')
+const productRoutes = require('./routes/productRoutes');
 
 dotenv.config(); // Load environment variables from .env file
 
 const app = express()
 
-console.log(process.env.MONGO_URI);
+app.use(express.json());
+
+// console.log(process.env.MONGO_URI);
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI)
@@ -20,6 +23,8 @@ mongoose.connect(process.env.MONGO_URI)
 app.get('/', (req, res) => {
     res.json({mssg: 'welcome'})
 })
+
+app.use('/api', productRoutes);
 
 app.listen(4000, () => {
     console.log('Listening')
