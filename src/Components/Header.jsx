@@ -22,8 +22,12 @@ const Header = () => {
                                 <li className={`${pathname == '/create-auction' ? 'text-[#6c3c3c] font-bold' : 'hover:text-[#6c3c3c]'}`}>Create Auction</li>
                             </Link>
                             <li className={`${pathname == '/category' ? 'text-[#6c3c3c] font-bold' : 'hover:text-[#6c3c3c]'}`}>Category</li>
+                            <Link to={'/contact'}>
                             <li className={`${pathname == '/contact' ? 'text-[#6c3c3c] font-bold' : 'hover:text-[#6c3c3c]'}`}>Contact</li>
+                            </Link>
+                            <Link to={'/sign-up'}>
                             <li className="flex items-center border-0 rounded-md px-6 py-1 bg-white text-[#6c3c3c] cursor-pointer hover:bg-[#6c3c3c] hover:text-white">Sign Up</li>
+                            </Link>
                         </ul>
                     </div>
                 </div>
