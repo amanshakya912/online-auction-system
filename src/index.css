@@ -2,3 +2,10 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.react-datetime-picker__wrapper {
+    border: none;
+}
+.react-datetime-picker__inputGroup__input {
+    width: 30px;
+}

@@ -14,10 +14,13 @@
     "@fortawesome/free-solid-svg-icons": "^6.6.0",
     "@fortawesome/react-fontawesome": "^0.2.2",
     "@react-spring/web": "^9.7.4",
+    "axios": "^1.7.8",
     "react": "^18.3.1",
     "react-countdown": "^2.3.6",
+    "react-datetime-picker": "^6.0.1",
     "react-dom": "^18.3.1",
     "react-form-wizard-component": "^0.2.7",
+    "react-hook-form": "^7.53.2",
     "react-loader-spinner": "^6.1.6",
     "react-router-dom": "^6.26.0",
     "swiper": "^11.1.9"
