@@ -10,12 +10,23 @@ import RecentAuction from "../Components/RecentAuction";
 import { useParams } from "react-router-dom";
 import Api from "../utils/Api";
 import Helper from "../utils/Helper";
+import BidModal from "../Components/BidModal";
 
 const ProductDetails = () => {
+    let countdownDate
     const { slug } = useParams()
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const handleBidNowClick = () => {
+        setIsModalOpen(true); // Open the modal when "Bid Now" is clicked
+    };
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false); // Close the modal
+    };
     const [show,setShow] = useState(false)
     const [quantity, setQuantity] = useState(1);
     const [details, setDetails] = useState()
+    const [auctionEnd, setAuctionEnd] = useState(false)
     const incrementQuantity = () => {
         setQuantity(prevQuantity => prevQuantity + 1);
     };
@@ -53,13 +64,41 @@ const ProductDetails = () => {
         const productDetails = async () => {
             try {
                 const res = await Api.getProductBySlug(slug)
+                console.log('res',res)
                 setDetails(res)
+                auctionCountdown(res.auctionStartTime,res.auctionEndTime)
             } catch(e) {
                 console.log('err',e)
             }
         }
         productDetails()
     },[])
+    const auctionCountdown = (auctionStartTime, auctionEndTime) => {
+        const currentTime = Date.now(); // Get current time in milliseconds
+
+        // Determine which date to countdown to
+    
+        if (currentTime < new Date(auctionStartTime).getTime()) {
+        // Auction hasn't started yet
+        countdownDate = new Date(auctionStartTime).getTime();
+        } else if (currentTime >= new Date(auctionStartTime).getTime() && currentTime < new Date(auctionEndTime).getTime()) {
+        // Auction is live
+        countdownDate = new Date(auctionEndTime).getTime();
+        } else {
+            setAuctionEnd(true)
+        }
+    }
+    const handleBidSubmit = async (bidAmount) => {
+        // Handle the bid submission logic here
+        console.log('Bid Amount:', bidAmount);
+        const productId = details?._id
+        try {
+            const res = await Api.placeBid(productId, bidAmount);
+            console.log(res)
+        } catch (e) {
+            console.log(e)
+        }
+    };
     return (
         <>
         <Header />
@@ -73,7 +112,10 @@ const ProductDetails = () => {
                         <img src={`${Helper.BASE_URL}${details?.images}`} alt={`${details?.name}`}/>
                         <div className="absolute bottom-0 w-full">
                             <div className="mb-4 px-5 w-1/2">
-                            <Countdown date={Date.now() + 5 * 24 * 60 * 60 * 1000} renderer={renderer}/>
+                            {auctionEnd ? <div className="bg-[#212121] text-white p-2 text-center"> Auction Time Has Ended </div> :
+                            <>
+                            <Countdown date={countdownDate} renderer={renderer} />
+                            </>}
                             </div>
                         </div>
                         {/* <div className="bg-[#212121] w-full px-5 py-3 text-white flex justify-between">
@@ -142,7 +184,9 @@ const ProductDetails = () => {
                             </div>
                         </div>
                         <div className="flex gap-x-5">
-                            <div className='cursor-pointer border-0 rounded-md bg-[#A27B5C] hover:bg-[#6c3c3c] text-white text-center text-[15px] py-2 px-5 w-1/2'>
+                            <div 
+                            onClick={handleBidNowClick}
+                            className='cursor-pointer border-0 rounded-md bg-[#A27B5C] hover:bg-[#6c3c3c] text-white text-center text-[15px] py-2 px-5 w-1/2'>
                                 Bid Now <FontAwesomeIcon icon={faGavel}/>
                             </div>
                             <div className='cursor-pointer border-0 rounded-md bg-[#A27B5C] hover:bg-[#6c3c3c] text-white text-center text-[15px] py-2 px-5 w-1/2'>
@@ -170,7 +214,16 @@ const ProductDetails = () => {
                     </div>
                 </div>
                 <RecentAuction />
-            </div>                    
+            </div>
+            <BidModal
+                isOpen={isModalOpen}
+                onClose={handleCloseModal}
+                productName={details?.name}
+                startingPrice={details?.startingPrice}
+                currentBid={details?.currentBid}
+                bidIncrement={details?.bidIncrement}
+                onBidSubmit={handleBidSubmit}
+            />       
         </div>
         <Footer/>
         </>

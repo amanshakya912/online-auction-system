@@ -23,7 +23,9 @@
     "react-form-wizard-component": "^0.2.7",
     "react-hook-form": "^7.53.2",
     "react-loader-spinner": "^6.1.6",
+    "react-multistep": "^5.5.9",
     "react-router-dom": "^6.26.0",
+    "react-toastify": "^11.0.3",
     "swiper": "^11.1.9"
   },
   "devDependencies": {

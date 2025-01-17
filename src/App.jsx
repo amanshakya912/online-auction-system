@@ -5,8 +5,10 @@ import Loader from "./Components/Loader"
 import CreateAuction from "./Pages/CreateAuction"
 import BrowseAuction from "./Pages/BrowseAuction"
 import ProductDetails from "./Pages/ProductDetails"
-import Signup from "./Pages/signup"
+import Signup from "./Pages/Signup"
 import Contact from "./Pages/Contact"
+import Cart from "./Pages/Cart"
+import UserProfile from "./Pages/UserProfile"
 
 
 const App = () => {
@@ -20,6 +22,8 @@ const App = () => {
               <Route path="/browse-auction" element={<BrowseAuction/>}/>
               <Route path="/sign-up" element={<Signup/>}/>
               <Route path="/contact" element={<Contact/>}/>
+              <Route path="/cart" element={<Cart/>}/>
+              <Route path="/user/:username" element={<UserProfile/>}/>
               <Route path="/:slug" element={<ProductDetails/>}/>
             </Routes>
           </Suspense>
