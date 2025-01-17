@@ -1,10 +1,11 @@
 const mongoose = require('mongoose')
+const slugify = require("slugify");
 
 const productSchema = new mongoose.Schema({
-    productId: {
-        type: Number,
-        unique: true
-    },
+    // productId: {
+    //     type: Number,
+    //     unique: true
+    // },
     name: {
         type: String,
         required: true
@@ -16,7 +17,7 @@ const productSchema = new mongoose.Schema({
     slug: {
         type: String,
         unique: true,
-        required: true,
+        // required: true,
         lowercase: true,
     },
     quantity: {
@@ -41,7 +42,7 @@ const productSchema = new mongoose.Schema({
     },
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
-        // ref: 'User',
+        ref: 'User',
         required: true
     },
     numberOfBids: {
@@ -51,7 +52,7 @@ const productSchema = new mongoose.Schema({
     activeBidders: [{
         type: mongoose.Schema.Types.ObjectId,
         // ref: 'User',
-        unique: true
+        // unique: true
     }],
     category: {
         type: String,
