@@ -7,7 +7,7 @@ const Cart = () => {
   const cartItems = [
     {
       id: 1,
-      name: "Samsung Galaxy",
+      name: "Samsung Galaxyy",
       price: 30000,
       quantity: 1,
       img: "../images/mobile1.png",
