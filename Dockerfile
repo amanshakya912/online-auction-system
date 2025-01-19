@@ -1,5 +1,5 @@
 # Use a base image with Node.js and Python
-FROM node:16-bullseye
+FROM node:18-bullseye
 
 # Install Python dependencies
 RUN apt-get update && \
@@ -16,7 +16,7 @@ COPY . .
 RUN npm install
 
 # Expose the application port
-EXPOSE 3000
+EXPOSE 4000
 
 # Start the application
 CMD ["npm", "start"]
