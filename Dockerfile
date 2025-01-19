@@ -1,19 +1,23 @@
 # Use a base image with Node.js and Python
 FROM node:18-bullseye
 
-# Install Python dependencies
-RUN apt-get update && \
-    apt-get install -y python3 python3-pip && \
-    pip3 install numpy joblib scikit-learn
+# Install system dependencies
+RUN apt-get update && apt-get install -y python3 python3-pip && rm -rf /var/lib/apt/lists/*
 
-# Set the working directory in the container
+# Set the working directory
 WORKDIR /app
 
 # Copy application files
 COPY . .
 
+# Install Python dependencies
+RUN pip3 install --no-cache-dir -r requirements.txt
+
 # Install Node.js dependencies
-RUN npm install
+RUN npm install --legacy-peer-deps
+
+# Ensure the uploads directory exists
+RUN mkdir -p uploads && chmod -R 755 uploads
 
 # Expose the application port
 EXPOSE 4000
