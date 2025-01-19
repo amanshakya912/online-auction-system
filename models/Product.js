@@ -51,7 +51,7 @@ const productSchema = new mongoose.Schema({
     },
     activeBidders: [{
         type: mongoose.Schema.Types.ObjectId,
-        // ref: 'User',
+        ref: 'User',
         // unique: true
     }],
     category: {
@@ -76,8 +76,17 @@ const productSchema = new mongoose.Schema({
         default: 'Available'
     },
     details: {
-        type: mongoose.Schema.Types.ObjectId, // Foreign key reference to detailed information
-        // ref: 'ProductDetail'
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'ProductDetail'
+    },
+    finalPrice: {
+        type: Number,
+        default: null // This ensures that it is explicitly empty before the auction ends.
+    },    
+    boughtBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User', 
+        required: false
     },
     createdAt: {
         type: Date,
@@ -90,14 +99,16 @@ const productSchema = new mongoose.Schema({
 }, { timestamps: true })
 
 // Automatically generate and ensure the slug is unique before saving
-productSchema.pre('save', async function(next) {
-    if (this.name) {
+productSchema.pre('save', async function (next) {
+    if (this.isNew || this.isModified('name')) {
+        // Generate slug only if the document is new or the name has changed
         let slug = slugify(this.name, { lower: true, strict: true });
 
-        const existingProduct = await mongoose.models.Product.findOne({ slug });
-        
+        let existingProduct = await mongoose.models.Product.findOne({ slug });
         let counter = 1;
-        while (existingProduct) {
+
+        while (existingProduct && existingProduct._id.toString() !== this._id.toString()) {
+            // Ensure the slug is unique among other products
             slug = `${slugify(this.name, { lower: true, strict: true })}-${counter}`;
             counter++;
             existingProduct = await mongoose.models.Product.findOne({ slug });
@@ -107,5 +118,6 @@ productSchema.pre('save', async function(next) {
     }
     next();
 });
+
 
 module.exports = mongoose.model('Product', productSchema);

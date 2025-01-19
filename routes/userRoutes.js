@@ -11,5 +11,8 @@ router.get('/users', userController.getAllUsers);
 
 router.get('/user', userController.getUser);
 
+router.put('/user/edit', userController.editUser);
+
+router.delete('/user/delete', userController.deleteUser)
 
 module.exports = router;

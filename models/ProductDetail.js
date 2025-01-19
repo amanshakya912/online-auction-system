@@ -21,6 +21,7 @@ const ProductDetailSchema = new mongoose.Schema({
     three_g: { type: Number, required: true }, // 3G support (true/false)
     touch_screen: { type: Number, required: true }, // Touchscreen availability (true/false)
     wifi: { type: Number, required: true }, // Wi-Fi support (true/false)
+    price_range: { type: Number, required: true },
 }, { timestamps: true }); // Automatically adds createdAt and updatedAt fields
 
 const ProductDetail = mongoose.model('ProductDetail', ProductDetailSchema);
