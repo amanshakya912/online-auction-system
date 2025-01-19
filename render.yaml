@@ -3,3 +3,6 @@ services:
     name: online-auction-system
     env: docker
     dockerfilePath: ./Dockerfile
+    buildCommand: "npm install"
+    startCommand: "npm start"
+    port: 4000
