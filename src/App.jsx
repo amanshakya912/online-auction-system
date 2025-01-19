@@ -9,6 +9,7 @@ import Signup from "./Pages/Signup"
 import Contact from "./Pages/Contact"
 import Cart from "./Pages/Cart"
 import UserProfile from "./Pages/UserProfile"
+import Checkout from "./Pages/Checkout"
 
 
 const App = () => {
@@ -19,10 +20,11 @@ const App = () => {
             <Routes>
               <Route path="/" element={<Homepage />}/>
               <Route path="/create-auction" element={<CreateAuction/>}/>
-              <Route path="/browse-auction" element={<BrowseAuction/>}/>
+              <Route path="/browse-auction/:slug" element={<BrowseAuction/>}/>
               <Route path="/sign-up" element={<Signup/>}/>
               <Route path="/contact" element={<Contact/>}/>
               <Route path="/cart" element={<Cart/>}/>
+              <Route path="/checkout" element={<Checkout/>}/>
               <Route path="/user/:username" element={<UserProfile/>}/>
               <Route path="/:slug" element={<ProductDetails/>}/>
             </Routes>

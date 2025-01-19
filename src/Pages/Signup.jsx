@@ -226,11 +226,11 @@ const signUp = async (data) => {
               </div>
             </div>
 
-            {action === "Login" && (
+            {/* {action === "Login" && (
               <div className="forgot-password pl-[187px] mt-[27px] text-black text-[18px]">
                 Forgot Password? <span className="hover:text-[#4c00b4] p-2 cursor-pointer">Click Here!</span>
               </div>
-            )}
+            )} */}
 
             <div className="submit-container flex md:flex-row flex-col gap-[30px] mx-auto mt-[40px]">
               {/* Submit Button */}

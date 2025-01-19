@@ -7,6 +7,7 @@ import 'swiper/css/scrollbar';
 import { useSpring, useTransition, animated } from '@react-spring/web'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGavel } from '@fortawesome/free-solid-svg-icons';
+import { Link } from 'react-router-dom';
 
 const Banner = () => {
     const springs = useSpring({
@@ -69,9 +70,11 @@ const Banner = () => {
                             {transitions((style, item) =>
                                 item ? (
                                     <animated.div style={style}>
-                                    <div className='cursor-pointer border-0 rounded-md bg-[#A27B5C] hover:bg-[#6c3c3c] text-white text-[25px] py-2 mt-5'>
-                                        Bid Now <FontAwesomeIcon icon={faGavel}/>
-                                    </div>
+                                    <Link to={'/browse-auction/live'}>
+                                        <div className='cursor-pointer border-0 rounded-md bg-[#A27B5C] hover:bg-[#6c3c3c] text-white text-[25px] py-2 mt-5'>
+                                            Bid Now <FontAwesomeIcon icon={faGavel}/>
+                                        </div>
+                                    </Link>
                                     </animated.div>
                                 ) : null
                             )}
