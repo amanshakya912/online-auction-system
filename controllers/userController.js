@@ -15,7 +15,6 @@ exports.signUp = async (req, res) => {
             { name: 'email', value: email },
             { name: 'password', value: password },
         ];
-    
         const missingFields = requiredFields
             .filter(field => !field.value)
             .map(field => field.name);

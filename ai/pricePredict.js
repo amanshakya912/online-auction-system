@@ -49,7 +49,7 @@ function predictPrice(features) {
         const featuresJSON = JSON.stringify(features);
         console.log("Features Sent:", featuresJSON);
 
-        const pythonProcess = spawn('python3', ['predict_price.py', featuresJSON]);
+        const pythonProcess = spawn('python', ['predict_price.py', featuresJSON]);
 
         let output = '';
         let errorOutput = '';

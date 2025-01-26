@@ -4,7 +4,7 @@ import numpy as np
 import json
 
 try:
-    knn = joblib.load('knn_model.pkl')
+    knn = joblib.load('knn_model2.pkl')
     features = json.loads(sys.argv[1])
     features = np.array(features).reshape(1, -1)
     predicted_price = knn.predict(features)

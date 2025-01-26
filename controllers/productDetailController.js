@@ -6,56 +6,45 @@ exports.addProductDetail = async (req, res) => {
     try {
         const features = req.body; // Expecting an array of features
 
-        // Validate that the features array contains exactly 20 elements
-        if (!Array.isArray(features) || features.length !== 20) {
-            return res.status(400).json({ error: 'Invalid data format. Expected an array with 20 elements.' });
+        // Validate that the features array contains exactly 11 elements
+        if (!Array.isArray(features) || features.length !== 11) {
+            return res.status(400).json({ error: 'Invalid data format. Expected an array with 11 elements.' });
         }
 
         // Predict price range using Python script
         const predictedPrice = await predictPrice(features);
 
         // Map the features to the schema fields
-        const [battery_power, blue, clock_speed, dual_sim, fc, four_g, int_memory, m_dep, mobile_wt, n_cores,
-            pc, px_height, px_width, ram, sc_h, sc_w, talk_time, three_g, touch_screen, wifi] = features;
+        const [battery_power, blue, dual_sim, fc, int_memory,
+            ram, wifi, pc, n_cores, px_height, px_width] = features;
 
         // Create a ProductDetail object
         const productDetailData = {
             battery_power,
             blue,
-            clock_speed,
+            clock_speed: 0,
             dual_sim,
             fc,
-            four_g,
+            four_g:0,
             int_memory,
-            m_dep,
-            mobile_wt,
+            m_dep:0,
+            mobile_wt:0,
             n_cores,
             pc,
             px_height,
             px_width,
             ram,
-            sc_h,
-            sc_w,
-            talk_time,
-            three_g,
-            touch_screen,
+            sc_h:0,
+            sc_w:0,
+            talk_time:0,
+            three_g:0,
+            touch_screen:0,
             wifi,
             price_range: predictedPrice,
         };
 
         const productDetail = new ProductDetail(productDetailData);
         const savedProductDetail = await productDetail.save();
-
-        // const { productId } = req.query; // Accept productId as a query parameter
-        // if (productId) {
-        //     const product = await Product.findById(productId);
-        //     if (!product) {
-        //         return res.status(404).json({ error: 'Product not found.' });
-        //     }
-
-        //     product.details = savedProductDetail._id;
-        //     await product.save();
-        // }
 
         res.status(201).json({
             message: 'Product details created successfully.',

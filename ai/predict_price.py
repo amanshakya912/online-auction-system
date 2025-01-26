@@ -6,10 +6,7 @@ import json
 try:
     # Load the saved KNN model
     # print("Loading KNN model...")
-    knn = joblib.load('knn_model.pkl')
-
-    # Get features from command-line arguments
-    # print("Received arguments:", sys.argv[1])
+    knn = joblib.load('knn_model2.pkl')
     features = json.loads(sys.argv[1])
     # print("Parsed features:", features)
 

@@ -11,9 +11,11 @@ const { initSocket } = require('./socket'); // Import initSocket
 dotenv.config();
 
 const app = express();
-app.use(cors());
+// app.use(cors());
 app.use(express.json());
-
+app.use(cors({
+  origin: '*' // Replace '*' with specific domains if needed
+}));
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('Connected to MongoDB'))
   .catch((error) => console.error('Error connecting to MongoDB:', error));
@@ -28,6 +30,6 @@ app.use('/uploads', express.static('uploads'));
 const server = http.createServer(app); // Create server
 initSocket(server); // Initialize socket.io with the server
 
-server.listen(4000, () => {
-  console.log('Server is running on port 4000');
+server.listen(5000, '0.0.0.0', () => {
+  console.log('Server is running on port 5000');
 });

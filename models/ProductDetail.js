@@ -22,8 +22,7 @@ const ProductDetailSchema = new mongoose.Schema({
     touch_screen: { type: Number, required: true }, // Touchscreen availability (true/false)
     wifi: { type: Number, required: true }, // Wi-Fi support (true/false)
     price_range: { type: Number, required: true },
-}, { timestamps: true }); // Automatically adds createdAt and updatedAt fields
-
+}, { timestamps: true }); 
 const ProductDetail = mongoose.model('ProductDetail', ProductDetailSchema);
 
 module.exports = ProductDetail;
