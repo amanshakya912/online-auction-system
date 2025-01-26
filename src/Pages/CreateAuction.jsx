@@ -45,7 +45,8 @@ const CreateAuction = () => {
 
     const handleSubmitForProductSpecifications = async () => {
         setLoading(true)
-        const productSpecs = [getValues('battery_power'),getValues('blue'),getValues('clock_speed'),getValues('dual_sim'),getValues('fc'),getValues('four_g'),getValues('int_memory'),getValues('m_dep'),getValues('mobile_wt'),getValues('n_cores'),getValues('pc'),getValues('px_height'),getValues('px_width'),getValues('ram'),getValues('sc_h'),getValues('sc_w'),getValues('talk_time'),getValues('three_g'),getValues('touch_screen'),getValues('wifi')]
+        // const productSpecs = [getValues('battery_power'),getValues('blue'),getValues('clock_speed'),getValues('dual_sim'),getValues('fc'),getValues('four_g'),getValues('int_memory'),getValues('m_dep'),getValues('mobile_wt'),getValues('n_cores'),getValues('pc'),getValues('px_height'),getValues('px_width'),getValues('ram'),getValues('sc_h'),getValues('sc_w'),getValues('talk_time'),getValues('three_g'),getValues('touch_screen'),getValues('wifi')]
+        const productSpecs = [getValues('battery_power'),getValues('blue'),getValues('dual_sim'),getValues('fc'),getValues('int_memory'),getValues('ram'),getValues('wifi'),getValues('pc'),getValues('n_cores'),getValues('px_height'),getValues('px_width')]
         console.log(productSpecs)
         const features = productSpecs.map(item => parseFloat(item));
         console.log('nm',features)
@@ -365,7 +366,7 @@ const CreateAuction = () => {
                                                         </div>
                                                     </div>
 
-                                                    <div className="grid grid-cols-2 text-start space-x-5">
+                                                    {/* <div className="grid grid-cols-2 text-start space-x-5">
                                                         <div className="flex flex-col">
                                                             <label htmlFor="clock_speed" className="text-xl my-5">
                                                             Clock Speed (GHz) <span className="text-red-500">*</span>
@@ -397,8 +398,24 @@ const CreateAuction = () => {
                                                             </select>
                                                             {errors.dual_sim && <p className="text-red-500 mt-2">{errors.dual_sim.message}</p>}
                                                         </div>
-                                                    </div>
+                                                    </div> */}
                                                     <div className="grid grid-cols-2 text-start space-x-5">
+                                                        <div className="flex flex-col">
+                                                            <label htmlFor="dual_sim" className="text-xl my-5">
+                                                            Dual SIM <span className="text-red-500">*</span>
+                                                            </label>
+                                                            <select
+                                                            id="dual_sim"
+                                                            name="dual_sim"
+                                                            {...register('dual_sim', { required: 'Dual SIM status is required' })}
+                                                            //   defaultValue={productDetails?.dual_sim || ''}
+                                                            className="w-full border-0 py-2 px-3 rounded-lg focus:outline-none text-black"
+                                                            >
+                                                            <option value="1">Yes</option>
+                                                            <option value="0">No</option>
+                                                            </select>
+                                                            {errors.dual_sim && <p className="text-red-500 mt-2">{errors.dual_sim.message}</p>}
+                                                        </div>
                                                         <div className="flex flex-col">
                                                             <label htmlFor="fc" className="text-xl my-5">
                                                             Front Camera (Mega Pixels) <span className="text-red-500">*</span>
@@ -414,7 +431,7 @@ const CreateAuction = () => {
                                                             {errors.fc && <p className="text-red-500 mt-2">{errors.fc.message}</p>}
                                                         </div>
 
-                                                        <div className="flex flex-col">
+                                                        {/* <div className="flex flex-col">
                                                             <label htmlFor="four_g" className="text-xl my-5">
                                                             4G Support <span className="text-red-500">*</span>
                                                             </label>
@@ -429,7 +446,7 @@ const CreateAuction = () => {
                                                             <option value="0">No</option>
                                                             </select>
                                                             {errors.four_g && <p className="text-red-500 mt-2">{errors.four_g.message}</p>}
-                                                        </div>
+                                                        </div> */}
                                                     </div>
                                                     <div className="grid grid-cols-2 text-start space-x-5">
                                                         <div className="flex flex-col">
@@ -446,8 +463,21 @@ const CreateAuction = () => {
                                                             />
                                                             {errors.int_memory && <p className="text-red-500 mt-2">{errors.int_memory.message}</p>}
                                                         </div>
-
                                                         <div className="flex flex-col">
+                                                            <label htmlFor="ram" className="text-xl my-5">
+                                                            RAM (MB) <span className="text-red-500">*</span>
+                                                            </label>
+                                                            <input
+                                                            type="number"
+                                                            id="ram"
+                                                            name="ram"
+                                                            {...register('ram', { required: 'RAM size is required' })}
+                                                            //   defaultValue={productDetails?.ram || ''}
+                                                            className="w-full border-0 py-2 px-3 rounded-lg focus:outline-none text-black"
+                                                            />
+                                                            {errors.ram && <p className="text-red-500 mt-2">{errors.ram.message}</p>}
+                                                        </div>
+                                                        {/* <div className="flex flex-col">
                                                             <label htmlFor="m_dep" className="text-xl my-5">
                                                                 Mobile Depth (cm) <span className="text-red-500">*</span>
                                                             </label>
@@ -460,10 +490,10 @@ const CreateAuction = () => {
                                                             className="w-full border-0 py-2 px-3 rounded-lg focus:outline-none text-black"
                                                             />
                                                             {errors.m_dep && <p className="text-red-500 mt-2">{errors.m_dep.message}</p>}
-                                                        </div>
+                                                        </div> */}
                                                     </div>
                                                     <div className="grid grid-cols-2 text-start space-x-5">
-                                                        <div className="flex flex-col">
+                                                        {/* <div className="flex flex-col">
                                                             <label htmlFor="mobile_wt" className="text-xl my-5">
                                                             Weight of Mobile Phone <span className="text-red-500">*</span>
                                                             </label>
@@ -476,9 +506,24 @@ const CreateAuction = () => {
                                                             className="w-full border-0 py-2 px-3 rounded-lg focus:outline-none text-black"
                                                             />
                                                             {errors.mobile_wt && <p className="text-red-500 mt-2">{errors.mobile_wt.message}</p>}
-                                                        </div>
-
+                                                        </div> */}
                                                         <div className="flex flex-col">
+                                                            <label htmlFor="wifi" className="text-xl my-5">
+                                                            WiFi Support <span className="text-red-500">*</span>
+                                                            </label>
+                                                            <select
+                                                            id="wifi"
+                                                            name="wifi"
+                                                            {...register('wifi', { required: 'WiFi status is required' })}
+                                                            //   defaultValue={productDetails?.wifi || ''}
+                                                            className="w-full border-0 py-2 px-3 rounded-lg focus:outline-none text-black"
+                                                            >
+                                                            <option value="1">Yes</option>
+                                                            <option value="0">No</option>
+                                                            </select>
+                                                            {errors.wifi && <p className="text-red-500 mt-2">{errors.wifi.message}</p>}
+                                                        </div>
+                                                        {/* <div className="flex flex-col">
                                                             <label htmlFor="n_cores" className="text-xl my-5">
                                                                 Number of cores of processor <span className="text-red-500">*</span>
                                                             </label>
@@ -491,9 +536,7 @@ const CreateAuction = () => {
                                                             className="w-full border-0 py-2 px-3 rounded-lg focus:outline-none text-black"
                                                             />
                                                             {errors.n_cores && <p className="text-red-500 mt-2">{errors.n_cores.message}</p>}
-                                                        </div>
-                                                    </div>
-                                                    <div className="grid grid-cols-2 text-start space-x-5">
+                                                        </div> */}
                                                         <div className="flex flex-col">
                                                             <label htmlFor="pc" className="text-xl my-5">
                                                             Primary Camera (MegaPixels) <span className="text-red-500">*</span>
@@ -508,7 +551,36 @@ const CreateAuction = () => {
                                                             />
                                                             {errors.pc && <p className="text-red-500 mt-2">{errors.pc.message}</p>}
                                                         </div>
-
+                                                    </div>
+                                                    <div className="grid grid-cols-2 text-start space-x-5">
+                                                        {/* <div className="flex flex-col">
+                                                            <label htmlFor="pc" className="text-xl my-5">
+                                                            Primary Camera (MegaPixels) <span className="text-red-500">*</span>
+                                                            </label>
+                                                            <input
+                                                            type="number"
+                                                            id="pc"
+                                                            name="pc"
+                                                            {...register('pc', { required: 'Primary Camera is required' })}
+                                                            //   defaultValue={productDetails?.pc || ''}
+                                                            className="w-full border-0 py-2 px-3 rounded-lg focus:outline-none text-black"
+                                                            />
+                                                            {errors.pc && <p className="text-red-500 mt-2">{errors.pc.message}</p>}
+                                                        </div> */}
+                                                        <div className="flex flex-col">
+                                                            <label htmlFor="n_cores" className="text-xl my-5">
+                                                                Number of cores of processor <span className="text-red-500">*</span>
+                                                            </label>
+                                                            <input
+                                                            type="number"
+                                                            id="n_cores"
+                                                            name="n_cores"
+                                                            {...register('n_cores', { required: 'No. of cores is required' })}
+                                                            //   defaultValue={productDetails?.n_cores || ''}
+                                                            className="w-full border-0 py-2 px-3 rounded-lg focus:outline-none text-black"
+                                                            />
+                                                            {errors.n_cores && <p className="text-red-500 mt-2">{errors.n_cores.message}</p>}
+                                                        </div>
                                                         <div className="flex flex-col">
                                                             <label htmlFor="px_height" className="text-xl my-5">
                                                                 Pixel Resolution Height <span className="text-red-500">*</span>
@@ -540,7 +612,7 @@ const CreateAuction = () => {
                                                             {errors.px_width && <p className="text-red-500 mt-2">{errors.px_width.message}</p>}
                                                         </div>
 
-                                                        <div className="flex flex-col">
+                                                        {/* <div className="flex flex-col">
                                                             <label htmlFor="ram" className="text-xl my-5">
                                                             RAM (MB) <span className="text-red-500">*</span>
                                                             </label>
@@ -553,9 +625,9 @@ const CreateAuction = () => {
                                                             className="w-full border-0 py-2 px-3 rounded-lg focus:outline-none text-black"
                                                             />
                                                             {errors.ram && <p className="text-red-500 mt-2">{errors.ram.message}</p>}
-                                                        </div>
+                                                        </div> */}
                                                     </div>
-                                                    <div className="grid grid-cols-2 text-start space-x-5">
+                                                    {/* <div className="grid grid-cols-2 text-start space-x-5">
                                                         <div className="flex flex-col">
                                                             <label htmlFor="sc_h" className="text-xl my-5">
                                                             Screen Height (cm) <span className="text-red-500">*</span>
@@ -585,8 +657,8 @@ const CreateAuction = () => {
                                                             />
                                                             {errors.sc_w && <p className="text-red-500 mt-2">{errors.sc_w.message}</p>}
                                                         </div>
-                                                    </div>
-                                                    <div className="grid grid-cols-2 text-start space-x-5">
+                                                    </div> */}
+                                                    {/* <div className="grid grid-cols-2 text-start space-x-5">
                                                         <div className="flex flex-col">
                                                             <label htmlFor="talk_time" className="text-xl my-5">
                                                             Talk Time (hours) <span className="text-red-500">*</span>
@@ -617,9 +689,9 @@ const CreateAuction = () => {
                                                             </select>
                                                             {errors.three_g && <p className="text-red-500 mt-2">{errors.three_g.message}</p>}
                                                         </div>
-                                                    </div>
+                                                    </div> */}
                                                     <div className="grid grid-cols-2 text-start space-x-5">
-                                                        <div className="flex flex-col">
+                                                        {/* <div className="flex flex-col">
                                                             <label htmlFor="touch_screen" className="text-xl my-5">
                                                             Touch Screen (hours) <span className="text-red-500">*</span>
                                                             </label>
@@ -634,8 +706,8 @@ const CreateAuction = () => {
                                                                 <option value="0">No</option>
                                                             </select>
                                                             {errors.touch_screen && <p className="text-red-500 mt-2">{errors.touch_screen.message}</p>}
-                                                        </div>
-                                                        <div className="flex flex-col">
+                                                        </div> */}
+                                                        {/* <div className="flex flex-col">
                                                             <label htmlFor="wifi" className="text-xl my-5">
                                                             WiFi Support <span className="text-red-500">*</span>
                                                             </label>
@@ -650,7 +722,7 @@ const CreateAuction = () => {
                                                             <option value="0">No</option>
                                                             </select>
                                                             {errors.wifi && <p className="text-red-500 mt-2">{errors.wifi.message}</p>}
-                                                        </div>
+                                                        </div> */}
                                                     </div>
                                                 </>
                                             )}
