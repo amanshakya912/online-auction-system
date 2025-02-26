@@ -85,7 +85,7 @@ const BrowseAuction = () => {
                     </div>
                     {auctions.length > 0 ? (
                         <>
-                            <div className="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-5 pb-10">
+                            <div className="grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-5 pb-10 mx-5 md:mx-0"> 
                                 {auctions.map((product) => (
                                     <div key={product._id}>
                                         <div className="bg-[#AD8B73] border-0 rounded-2xl relative overflow-hidden group cursor-pointer hover:scale-105 transition-all duration-300 h-full">

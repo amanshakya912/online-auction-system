@@ -5,7 +5,7 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm }) => {
 
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-            <div className="bg-[#242628] p-6 rounded-lg shadow-lg w-1/3">
+            <div className="bg-[#242628] p-6 rounded-lg shadow-lg md:w-1/3 w-full mx-5 md:mx-0">
                 <h2 className="text-lg font-semibold mb-4">Confirm Deletion</h2>
                 <p className="mb-6">Are you sure you want to delete this product? This action cannot be undone.</p>
                 <div className="flex justify-end gap-4">

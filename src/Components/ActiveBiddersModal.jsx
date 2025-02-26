@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 const ActiveBiddersModal = ({ activeBidders, onClose }) => {
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-            <div className="bg-[#242628] w-1/3 rounded-lg shadow-lg p-6">
+            <div className="bg-[#242628] md:w-1/3 w-full mx-5 md:mx-0 rounded-lg shadow-lg p-6">
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xl font-semibold">Active Bidders</h2>
                     <button

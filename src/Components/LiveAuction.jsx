@@ -51,10 +51,10 @@ const LiveAuction = () => {
         <>
             <div className="bg-black">
                 <div className="w-full container mx-auto relative">
-                    <div className="text-center font-lora text-3xl text-white py-10">
+                    <div className="text-center font-lora md:text-3xl text-2xl text-white py-10">
                         Live Auctions
                     </div>
-                    <div className="grid lg:grid-cols-2 grid-cols-1 text-white gap-5">
+                    <div className="grid lg:grid-cols-2 grid-cols-1 text-white gap-5 mx-5 md:mx-0">
                         {products.length > 0
                             ?
                             <>
@@ -74,7 +74,7 @@ const LiveAuction = () => {
                                                     </div>
                                                 </Link>
                                             </div>
-                                            <div className="mb-4 px-5 w-1/2">
+                                            <div className="mb-4 px-5 md:w-1/2 w-full">
                                                 <Countdown date={new Date(product.auctionEndTime)} renderer={renderer} />
                                             </div>
                                             <div className="bg-[#212121] w-full px-5 py-3 text-white flex justify-between">

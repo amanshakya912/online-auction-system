@@ -33,7 +33,7 @@ const Banner = () => {
       
     return (
         <>
-            <Swiper
+            {/* <Swiper
                 spaceBetween={0}
                 slidesPerView={1}
                 // navigation
@@ -41,17 +41,17 @@ const Banner = () => {
                 scrollbar={{ draggable: true }}
                 onSwiper={(swiper) => console.log(swiper)}
                 onSlideChange={() => console.log('slide change')}
-            >
+            > */}
               
                 {/* <SwiperSlide>
                     <div className='w-full bg-red-600 h-[200px]'>
                         <div>hello</div>
                     </div>
                 </SwiperSlide> */}
-                <SwiperSlide>
-                    <div className='w-full h-auto object-cover'>
-                        <img src={banner1} className='w-full relative'/>
-                        <div className='z-20 absolute top-[28%] text-center text-[#A27B5C] flex flex-col text-[50px] font-[700] font-lora leading-tight'>
+                {/* <SwiperSlide> */}
+                    <div className='w-full h-auto'>
+                        <img src={banner1} className='w-full h-[500px] md:h-full object-cover  relative'/>
+                        <div className='z-20 absolute top-[28%] text-center text-[#A27B5C] flex flex-col md:text-[50px] text-[40px] font-[700] font-lora leading-tight'>
                             <animated.div 
                                 style={{
                                     ...springs
@@ -81,8 +81,8 @@ const Banner = () => {
                         </div>
                         <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black"></div>
                     </div>
-                </SwiperSlide>
-            </Swiper>
+                {/* </SwiperSlide> */}
+            {/* </Swiper> */}
         </>
     )
 }

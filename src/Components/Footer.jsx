@@ -1,3 +1,5 @@
+import { faEnvelope, faPhone } from "@fortawesome/free-solid-svg-icons"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { Link } from "react-router-dom"
 
 const Footer = () => {
@@ -6,7 +8,7 @@ const Footer = () => {
             <div className="bg-black">
                 <div className="w-full relative text-white pt-10 border-0 border-t border-white">
                     <div className="mx-auto">
-                        <div className="grid md:grid-cols-3 grid-cols-1">
+                        <div className="grid md:grid-cols-3 grid-cols-1 gap-8" >
                             <div className="col-span-1 flex items-center justify-center">
                                 <div className="font-lora font-bold text-3xl">Online Auction System</div>
                             </div>
@@ -18,10 +20,9 @@ const Footer = () => {
                                 <Link to="/browse-auction/recent"><div className="cursor-pointer hover:text-amber-900">Recent Auctions</div></Link>
                             </div>
                             <div className="col-span-1 flex flex-col text-lg items-center">
-                                <div className="font-lora font-medium text-xl">Developers</div>
-                                <div>Aman Shakya</div>
-                                <div>Bishesh Maharjan</div>
-                                <div>Sushil Maharjan</div>
+                                <div className="font-lora font-medium text-xl">Contact</div>
+                                <div><FontAwesomeIcon icon={faEnvelope} className="mr-2"/><a className="cursor-pointer hover:text-amber-900" mailto="amanshakya9912@gmail.com">amanshakya9912@gmail.com</a></div>                     
+                                <div><FontAwesomeIcon icon={faPhone} className="mr-2"/><a className="cursor-pointer hover:text-amber-900" href="tel:+977-9818313576">+977-9818313576</a></div>                     
                             </div>
                         </div>
                     </div>

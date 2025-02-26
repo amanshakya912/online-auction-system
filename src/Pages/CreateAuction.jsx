@@ -120,7 +120,7 @@ const CreateAuction = () => {
             <Header/>
             <div className="bg-black">
                 <div className="w-full container mx-auto relative">
-                    <div className="text-center font-lora text-3xl text-white py-10">
+                    <div className="text-center font-lora text-2xl md:text-3xl text-white py-10">
                     Create Auction
                     </div>
                     <div className="py-10">
@@ -164,8 +164,8 @@ const CreateAuction = () => {
                                     <React.Fragment>
                                         {product ? 
                                         <>
-                                            <div className="text-3xl font-lora text-center mt-3">Auction Summary</div>
-                                            <div className="mt-5 grid grid-cols-2 gap-5">
+                                            <div className="text-2xl md:text-3xl font-lora text-center mt-3">Auction Summary</div>
+                                            <div className="mt-5 grid md:grid-cols-2 grid-cols-1 gap-5">
                                                 <div className="flex gap-5">
                                                     <div className="text-lg font-medium">Product Name:</div>
                                                     <div className="text-xl text-white">{product.name}</div>
@@ -226,7 +226,7 @@ const CreateAuction = () => {
                                             <Box sx={{ mt: 2, mb: 1 }}>
                                             {activeStep === 0 && (
                                                 <div>
-                                                    <h2 className="text-3xl font-lora text-center">Select a category for your product</h2>
+                                                    <h2 className="text-2xl md:text-3xl font-lora text-center">Select a category for your product</h2>
                                                     <div className="text-start flex flex-col mb-10">
                                                         <label htmlFor="category" className="text-xl my-5">
                                                         Category
@@ -250,7 +250,7 @@ const CreateAuction = () => {
 
                                             {activeStep === 1 && (
                                                 <>
-                                                    <h2 className="text-3xl font-lora text-center">Provide Your Product Details</h2>
+                                                    <h2 className="text-2xl md:text-3xl font-lora text-center">Provide Your Product Details</h2>
                                                     <div className="text-start flex flex-col mb-10">
                                                         <label htmlFor="name" className="text-xl my-5">
                                                             Product Name <span className="text-red-500">*</span>
@@ -331,8 +331,8 @@ const CreateAuction = () => {
 
                                             {activeStep === 2 && (
                                                 <>
-                                                    <h2 className="text-3xl font-lora text-center">Provide The Product Specifications</h2>
-                                                    <div className="grid grid-cols-2 text-start space-x-5">
+                                                    <h2 className="text-2xl md:text-3xl font-lora text-center">Provide The Product Specifications</h2>
+                                                    <div className="grid md:grid-cols-2 grid-cols-1 text-start md:space-x-5">
                                                         <div className="flex flex-col">
                                                             <label htmlFor="battery_power" className="text-xl my-5">
                                                             Battery Power (mAh) <span className="text-red-500">*</span>
@@ -366,7 +366,7 @@ const CreateAuction = () => {
                                                         </div>
                                                     </div>
 
-                                                    {/* <div className="grid grid-cols-2 text-start space-x-5">
+                                                    {/* <div className="grid md:grid-cols-2 grid-cols-1 text-start md:space-x-5">
                                                         <div className="flex flex-col">
                                                             <label htmlFor="clock_speed" className="text-xl my-5">
                                                             Clock Speed (GHz) <span className="text-red-500">*</span>
@@ -399,7 +399,7 @@ const CreateAuction = () => {
                                                             {errors.dual_sim && <p className="text-red-500 mt-2">{errors.dual_sim.message}</p>}
                                                         </div>
                                                     </div> */}
-                                                    <div className="grid grid-cols-2 text-start space-x-5">
+                                                    <div className="grid md:grid-cols-2 grid-cols-1 text-start md:space-x-5">
                                                         <div className="flex flex-col">
                                                             <label htmlFor="dual_sim" className="text-xl my-5">
                                                             Dual SIM <span className="text-red-500">*</span>
@@ -448,7 +448,7 @@ const CreateAuction = () => {
                                                             {errors.four_g && <p className="text-red-500 mt-2">{errors.four_g.message}</p>}
                                                         </div> */}
                                                     </div>
-                                                    <div className="grid grid-cols-2 text-start space-x-5">
+                                                    <div className="grid md:grid-cols-2 grid-cols-1 text-start md:space-x-5">
                                                         <div className="flex flex-col">
                                                             <label htmlFor="int_memory" className="text-xl my-5">
                                                             Internal Memory (GB) <span className="text-red-500">*</span>
@@ -492,7 +492,7 @@ const CreateAuction = () => {
                                                             {errors.m_dep && <p className="text-red-500 mt-2">{errors.m_dep.message}</p>}
                                                         </div> */}
                                                     </div>
-                                                    <div className="grid grid-cols-2 text-start space-x-5">
+                                                    <div className="grid md:grid-cols-2 grid-cols-1 text-start md:space-x-5">
                                                         {/* <div className="flex flex-col">
                                                             <label htmlFor="mobile_wt" className="text-xl my-5">
                                                             Weight of Mobile Phone <span className="text-red-500">*</span>
@@ -552,7 +552,7 @@ const CreateAuction = () => {
                                                             {errors.pc && <p className="text-red-500 mt-2">{errors.pc.message}</p>}
                                                         </div>
                                                     </div>
-                                                    <div className="grid grid-cols-2 text-start space-x-5">
+                                                    <div className="grid md:grid-cols-2 grid-cols-1 text-start md:space-x-5">
                                                         {/* <div className="flex flex-col">
                                                             <label htmlFor="pc" className="text-xl my-5">
                                                             Primary Camera (MegaPixels) <span className="text-red-500">*</span>
@@ -596,7 +596,7 @@ const CreateAuction = () => {
                                                             {errors.px_height && <p className="text-red-500 mt-2">{errors.px_height.message}</p>}
                                                         </div>
                                                     </div>
-                                                    <div className="grid grid-cols-2 text-start space-x-5">
+                                                    <div className="grid md:grid-cols-2 grid-cols-1 text-start md:space-x-5">
                                                         <div className="flex flex-col">
                                                             <label htmlFor="px_width" className="text-xl my-5">
                                                             Pixel Resolution Width <span className="text-red-500">*</span>
@@ -627,7 +627,7 @@ const CreateAuction = () => {
                                                             {errors.ram && <p className="text-red-500 mt-2">{errors.ram.message}</p>}
                                                         </div> */}
                                                     </div>
-                                                    {/* <div className="grid grid-cols-2 text-start space-x-5">
+                                                    {/* <div className="grid md:grid-cols-2 grid-cols-1 text-start md:space-x-5">
                                                         <div className="flex flex-col">
                                                             <label htmlFor="sc_h" className="text-xl my-5">
                                                             Screen Height (cm) <span className="text-red-500">*</span>
@@ -658,7 +658,7 @@ const CreateAuction = () => {
                                                             {errors.sc_w && <p className="text-red-500 mt-2">{errors.sc_w.message}</p>}
                                                         </div>
                                                     </div> */}
-                                                    {/* <div className="grid grid-cols-2 text-start space-x-5">
+                                                    {/* <div className="grid md:grid-cols-2 grid-cols-1 text-start md:space-x-5">
                                                         <div className="flex flex-col">
                                                             <label htmlFor="talk_time" className="text-xl my-5">
                                                             Talk Time (hours) <span className="text-red-500">*</span>
@@ -690,7 +690,7 @@ const CreateAuction = () => {
                                                             {errors.three_g && <p className="text-red-500 mt-2">{errors.three_g.message}</p>}
                                                         </div>
                                                     </div> */}
-                                                    <div className="grid grid-cols-2 text-start space-x-5">
+                                                    <div className="grid md:grid-cols-2 grid-cols-1 text-start md:space-x-5">
                                                         {/* <div className="flex flex-col">
                                                             <label htmlFor="touch_screen" className="text-xl my-5">
                                                             Touch Screen (hours) <span className="text-red-500">*</span>
@@ -731,13 +731,13 @@ const CreateAuction = () => {
                                                     <div className="flex flex-col">
                                                         {loading ? 
                                                         <>
-                                                        <div className="text-center font-lora text-3xl text-white py-10">
+                                                        <div className="text-center font-lora text-2xl md:text-3xl text-white py-10">
                                                             Please wait, your Product Specifications are being analyzed and price range is being predicted!!
                                                         </div>
                                                         <Loader/>
                                                         </> : 
                                                         <>
-                                                        <div className="text-center font-lora text-3xl text-white py-10">
+                                                        <div className="text-center font-lora text-2xl md:text-3xl text-white py-10">
                                                             Your price range has been predicted as, Rs. 
                                                             {(() => {
                                                                 switch (priceRange) {
@@ -754,7 +754,7 @@ const CreateAuction = () => {
                                                                 }
                                                             })()}
                                                         </div>
-                                                        <div className="text-center font-lora text-3xl text-white py-10">
+                                                        <div className="text-center font-lora text-2xl md:text-3xl text-white py-10">
                                                             You can proceed to the next step!
                                                         </div>
                                                         </>}
@@ -763,8 +763,8 @@ const CreateAuction = () => {
                                             )}
                                             {activeStep === 4 && (
                                                 <>
-                                                    <h2 className="text-3xl font-lora text-center">Provide The Auction Details</h2>
-                                                    <div className="grid grid-cols-2 text-start space-x-5">
+                                                    <h2 className="text-2xl md:text-3xl font-lora text-center">Provide The Auction Details</h2>
+                                                    <div className="grid md:grid-cols-2 grid-cols-1 text-start md:space-x-5">
                                                         <div className="flex flex-col">
                                                             <label htmlFor="startingPrice" className="text-xl my-5">
                                                                 Starting Price <span className="text-red-500">*</span>
@@ -798,7 +798,7 @@ const CreateAuction = () => {
                                                             )}
                                                         </div>
                                                     </div>
-                                                    <div className="grid grid-cols-2 text-start space-x-5">
+                                                    <div className="grid md:grid-cols-2 grid-cols-1 text-start md:space-x-5">
                                                         <div className="flex flex-col">
                                                             <label htmlFor="bidIncrement" className="text-xl my-5">
                                                                 Bid Increment <span className="text-red-500">*</span>
@@ -840,7 +840,7 @@ const CreateAuction = () => {
                                                             )}
                                                         </div>
                                                     </div>
-                                                    <div className="grid grid-cols-2 text-start space-x-5 mb-5">
+                                                    <div className="grid md:grid-cols-2 grid-cols-1 text-start md:space-x-5 mb-5">
                                                         <div className="flex flex-col">
                                                             <label htmlFor="auctionEndTime" className="text-xl my-5">
                                                                 Auction End Time <span className="text-red-500">*</span>
@@ -903,8 +903,8 @@ const CreateAuction = () => {
                             </>
                             : 
                             <>
-                            <div className="flex items-center justify-center gap-10">
-                                <div className="text-center font-lora text-3xl text-white py-10">You need to be logged in to create an auction!</div>
+                            <div className="flex md:flex-row flex-col items-center justify-center gap-10">
+                                <div className="text-center font-lora text-2xl md:text-3xl text-white py-10">You need to be logged in to create an auction!</div>
                                 <Link to={'/sign-up'}><button className="flex items-center border-0 rounded-md px-6 py-1 hover:bg-white hover:text-[#6c3c3c] cursor-pointer bg-[#6c3c3c] text-white">Sign Up</button></Link>
                                 {/* <Link to={'/sign-up'}>
                                     <div className="flex items-center border-0 rounded-md px-6 py-1 hover:bg-white hover:text-[#6c3c3c] cursor-pointer bg-[#6c3c3c] text-white">

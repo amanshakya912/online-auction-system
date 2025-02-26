@@ -446,11 +446,11 @@ const ProductDetails = () => {
                         <div className="text-center font-lora text-3xl text-white py-10">
                             Product Not Found
                         </div></> : <>
-                        <div className="grid grid-cols-2 text-white gap-10">
+                        <div className="grid md:grid-cols-2 grid-cols-1 text-white gap-10">
                             <div className="bg-[#AD8B73] border-0 rounded-2xl relative overflow-hidden group cursor-pointer">
                                 <img src={`${Helper.BASE_URL}${details?.images}`} alt={`${details?.name}`} />
                                 <div className="absolute bottom-0 w-full">
-                                    <div className="mb-4 px-5 w-1/2">
+                                    <div className="mb-4 px-5 md:w-1/2 w-full">
                                         {auctionEnd ? (
                                             <div className="bg-[#212121] text-white p-2 text-center">
                                                 Auction Time Has Ended

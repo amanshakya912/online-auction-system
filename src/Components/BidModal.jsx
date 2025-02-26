@@ -36,7 +36,7 @@ const BidModal = ({ isOpen, onClose, productName, startingPrice, currentBid, bid
 
     return (
         <div className="fixed inset-0 flex justify-center items-center bg-gray-800 bg-opacity-50 z-50">
-            <div className="bg-[#242628] p-6 rounded-lg w-1/3 text-white">
+            <div className="bg-[#242628] p-6 rounded-lg md:w-1/3 w-full mx-5 md:mx-0 text-white">
                 <h2 className="text-2xl font-bold mb-4">Place Your Bid on {productName}</h2>
                 <div className="mb-4">
                     <label htmlFor="bidAmount" className="block text-lg mb-2">Enter your bid amount:</label>

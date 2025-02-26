@@ -58,12 +58,12 @@ const UpcomingAuction = () => {
         <>
             <div className="bg-[#A27B5C] relative">
                 <div className="w-full container mx-auto relative z-20">
-                    <div className="text-center font-lora text-3xl text-white pt-20 pb-10">
+                    <div className="text-center font-lora md:text-3xl text-2xl text-white pt-20 pb-10">
                         Upcoming Auctions
                     </div>
                     {products.length > 0 ? (
                         <>
-                            <div className="grid lg:grid-cols-2 grid-cols-1 gap-5">
+                            <div className="grid lg:grid-cols-2 grid-cols-1 gap-5 mx-5 md:mx-0">
                                 {products.slice(0, 2).map(product => (
                                     <>
                                         <div className="col-span-1">
@@ -80,7 +80,7 @@ const UpcomingAuction = () => {
                                                             View Details
                                                         </div>
                                                     </div>
-                                                    <div className="mb-4 px-5 w-1/2">
+                                                    <div className="mb-4 px-5 md:w-1/2 w-full">
                                                         <div className="bg-[#212121] text-white p-2 text-start">
                                                             {/* 2024-04-12 08:00 PM */}
                                                             <Countdown date={new Date(product.auctionStartTime)} renderer={renderer} />
