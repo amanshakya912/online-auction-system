@@ -75,7 +75,7 @@ const UpcomingAuction = () => {
                                     <>
                                         <div className="col-span-1">
                                             <Link to={`/${product.slug}`}>
-                                                <div className="bg-[#AD8B73] border-0 rounded-2xl relative overflow-hidden group cursor-pointer hover:scale-105 transition-all duration-300">
+                                                <div className="bg-[#AD8B73] border-0 rounded-2xl relative overflow-hidden group cursor-pointer hover:scale-105 transition-all duration-300 h-full flex justify-between flex-col">
                                                     <img src={`${Helper.BASE_URL}${product.images}`}/>
                                                     <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-80 transition-opacity duration-300 h-full w-full flex justify-center items-center">
                                                         {/* <div className="absolute top-3 right-4">
@@ -87,6 +87,7 @@ const UpcomingAuction = () => {
                                                             View Details
                                                         </div>
                                                     </div>
+                                                    <div>
                                                     <div className="mb-4 px-5 md:w-1/2 w-full">
                                                         <div className="bg-[#212121] text-white p-2 text-start">
                                                             {/* 2024-04-12 08:00 PM */}
@@ -102,6 +103,7 @@ const UpcomingAuction = () => {
                                                         {/* <div className="flex flex-col">
                                                             <div className="text-xl">Waiting: 10</div>
                                                         </div> */}
+                                                    </div>
                                                     </div>
                                                 </div>
                                             </Link>

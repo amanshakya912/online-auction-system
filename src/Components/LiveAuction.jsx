@@ -64,7 +64,7 @@ const LiveAuction = () => {
                   <div className="grid lg:grid-cols-2 grid-cols-1 text-white gap-5 mx-5 md:mx-0">
                     {products.map((product) => (
                       <div className="col-span-1">
-                        <div className="bg-[#AD8B73] border-0 rounded-2xl relative overflow-hidden group cursor-pointer hover:scale-105 transition-all duration-300">
+                        <div className="bg-[#AD8B73] border-0 rounded-2xl relative overflow-hidden group cursor-pointer hover:scale-105 transition-all duration-300 h-full flex flex-col justify-between">
                           <img src={`${Helper.BASE_URL}${product.images[0]}`} />
                           <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-80 transition-opacity duration-300 h-full w-full flex justify-center items-center">
                             {/* <div className="absolute top-3 right-4">
@@ -78,6 +78,7 @@ const LiveAuction = () => {
                               </div>
                             </Link>
                           </div>
+                          <div>
                           <div className="mb-4 px-5 md:w-1/2 w-full">
                             <Countdown
                               date={new Date(product.auctionEndTime)}
@@ -99,6 +100,7 @@ const LiveAuction = () => {
                                 Active Bidders: {product.activeBidders.length}
                               </div>
                             </div>
+                          </div>
                           </div>
                         </div>
                       </div>
