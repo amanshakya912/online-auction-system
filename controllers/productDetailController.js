@@ -10,10 +10,9 @@ exports.addProductDetail = async (req, res) => {
         if (!Array.isArray(features) || features.length !== 11) {
             return res.status(400).json({ error: 'Invalid data format. Expected an array with 11 elements.' });
         }
-
         // Predict price range using Python script
         const predictedPrice = await predictPrice(features);
-
+        console.log('pp', predictedPrice)
         // Map the features to the schema fields
         const [battery_power, blue, dual_sim, fc, int_memory,
             ram, wifi, pc, n_cores, px_height, px_width] = features;

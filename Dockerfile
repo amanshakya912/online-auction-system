@@ -1,10 +1,14 @@
-# Use a base image with Node.js and Python
-FROM node:18-bullseye
+FROM python:3.9-slim
 
-# Install system dependencies
+# Install Node.js
 RUN apt-get update && \
-    apt-get install -y python3 python3-pip && \
-    pip3 install numpy joblib scikit-learn
+    apt-get install -y curl && \
+    curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
+    apt-get install -y nodejs
+
+# Install Python dependencies
+RUN pip install numpy joblib scikit-learn
+
 # Set the working directory
 WORKDIR /app
 

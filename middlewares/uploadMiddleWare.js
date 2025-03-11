@@ -4,10 +4,13 @@ const path = require('path');
 // Set storage engine
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, './uploads/'); // Folder to store uploaded files
+        console.log('Saving file to:', './uploads/');
+        cb(null, './uploads/');
     },
     filename: (req, file, cb) => {
-        cb(null, `${Date.now()}-${file.originalname}`);
+        const filename = `${Date.now()}-${file.originalname}`;
+        console.log('Saving file as:', filename);
+        cb(null, filename);
     },
 });
 

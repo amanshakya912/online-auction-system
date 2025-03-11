@@ -5,7 +5,7 @@ let io;
 const initSocket = (server) => {
   io = socketIo(server, {
     cors: {
-      origin: '*',  // Update this in production
+      origin: '*',
     },
   });
 
