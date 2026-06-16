@@ -24,16 +24,16 @@ dotenv.config();
 
 const app = express();
 
-// CORS configuration — restrict to known origins
+// CORS configuration
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
+  'https://online-auction-system-tjot.vercel.app',
   process.env.FRONTEND_URL,
 ].filter(Boolean);
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (server-to-server, Postman, etc.)
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
