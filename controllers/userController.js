@@ -1,9 +1,10 @@
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const dotenv = require('dotenv')
+const dotenv = require('dotenv');
+const { sendVerificationEmail } = require('./emailVerificationController');
 
-dotenv.config(); // Load environment variables from .env file
+dotenv.config();
 
 exports.signUp = async (req, res) => {
     try {
@@ -34,9 +35,14 @@ exports.signUp = async (req, res) => {
         const newUser = new User({ firstName, lastName, userName, email, password: hashedPassword });
         await newUser.save();
 
+        // Send verification email — non-blocking
+        sendVerificationEmail(newUser).catch(err =>
+            console.error('Failed to send verification email:', err)
+        );
+
         res.status(201).json({ message: 'User created successfully' });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: 'Server error. Please try again later.' });
     }   
 }
 
@@ -60,7 +66,6 @@ exports.signIn = async (req, res) => {
         if (!user) {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
-        // console.log(user)
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return res.status(400).json({ message: 'Invalid email or password' });
@@ -74,7 +79,7 @@ exports.signIn = async (req, res) => {
         res.status(200).json({ message: 'Signed in successfully', token, userName: user.userName, id: user._id });
 
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: 'Server error. Please try again later.' });
     }
 }
 
@@ -83,7 +88,7 @@ exports.getAllUsers = async (req, res) => {
         const users = await User.find().select('-password');
         res.status(200).json(users);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: 'Server error. Please try again later.' });
     }
 };
 
@@ -109,16 +114,14 @@ exports.getUser = async (req, res) => {
 
         res.status(200).json(user);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: 'Server error. Please try again later.' });
     }
 };
 
 
 exports.editUser = async (req, res) => {
     try {
-        const token = req.headers.authorization.split(' ')[1];
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const userId = decoded.id;
+        const userId = req.user.id;
 
         const { firstName, lastName, userName, email, password } = req.body;
 
@@ -173,17 +176,13 @@ exports.editUser = async (req, res) => {
 
         res.status(200).json({ message: 'Profile updated successfully' });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: 'Server error. Please try again later.' });
     }
 };
 
-
-
 exports.deleteUser = async (req, res) => {
     try {
-        const token = req.headers.authorization.split(' ')[1];
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const userId = decoded.id; 
+        const userId = req.user.id;
 
         // Find the user by ID
         const user = await User.findById(userId);
@@ -196,7 +195,7 @@ exports.deleteUser = async (req, res) => {
 
         res.status(200).json({ message: 'User deleted successfully' });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: 'Server error. Please try again.' });
     }
 };
 

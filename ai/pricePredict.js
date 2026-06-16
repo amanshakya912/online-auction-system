@@ -1,41 +1,40 @@
 const { spawn } = require('child_process');
+const path = require('path');
+
+const PYTHON_CMD = process.platform === 'win32' ? 'python' : 'python3';
 
 function predictPrice(features) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         const featuresJSON = JSON.stringify(features);
-        console.log("Features Sent:", featuresJSON);
+        const scriptPath = path.join(__dirname, '..', 'predict_price.py');
 
-        const pythonProcess = spawn('python3', ['predict_price.py', featuresJSON]);
+        const pythonProcess = spawn(PYTHON_CMD, [scriptPath, featuresJSON]);
 
         let output = '';
         let errorOutput = '';
 
         pythonProcess.stdout.on('data', (data) => {
-            console.log("Python STDOUT:", data.toString()); // Debug Python output
             output += data.toString();
         });
 
         pythonProcess.stderr.on('data', (data) => {
-            console.error("Python STDERR:", data.toString()); // Debug errors
             errorOutput += data.toString();
         });
 
         pythonProcess.on('close', (code) => {
             if (code === 0) {
-                try {
-                    // Trim and parse the output as a number
-                    const result = parseFloat(output.trim());
-                    if (isNaN(result)) {
-                        reject(new Error(`Invalid output: ${output}`));
-                    } else {
-                        resolve(result);
-                    }
-                } catch (parseError) {
-                    reject(new Error(`Failed to parse output: ${output}`));
+                const result = parseFloat(output.trim());
+                if (!isNaN(result)) {
+                    return resolve(result);
                 }
-            } else {
-                reject(new Error(`Python script exited with code ${code}: ${errorOutput}`));
             }
+            console.warn('Price prediction unavailable, using default. Python error:', errorOutput.trim());
+            resolve(0);
+        });
+
+        pythonProcess.on('error', () => {
+            console.warn('Python not available, using default price prediction.');
+            resolve(0);
         });
     });
 }

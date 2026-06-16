@@ -22,7 +22,7 @@ RUN npm install --legacy-peer-deps
 RUN mkdir -p uploads && chmod -R 755 uploads
 
 # Expose the application port
-EXPOSE 4000
+EXPOSE 5000
 
 # Start the application
 CMD ["npm", "start"]

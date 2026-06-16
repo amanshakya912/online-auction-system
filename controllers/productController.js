@@ -1,13 +1,31 @@
 const Product = require('../models/Product');
-const jwt = require('jsonwebtoken');
-const { sendEmail }  = require('../mail/sendEmail'); // Import the sendEmail function
+const User = require('../models/User');
+const fs = require('fs');
+const path = require('path');
+const { sendEmail }  = require('../mail/sendEmail');
 const { getIo } = require('../socket');
+const PaginationHelper = require('../utils/pagination');
+
+const canManageProduct = async (product, userId) => {
+    if (!product || !userId) return false;
+    if (product.createdBy && product.createdBy.toString() === userId.toString()) {
+        return true;
+    }
+
+    const user = await User.findById(userId).select('role');
+    return user?.role === 'admin';
+};
+
+const getIdString = (value) => {
+    if (!value) return null;
+    return value._id ? value._id.toString() : value.toString();
+};
 
 exports.addProduct = async (req, res) => {
-    const { name, description, quantity, startingPrice, buyNowPrice, bidIncrement, auctionStartTime, auctionEndTime, category, productDetailId } = req.body
-    // console.log('req', req.body, req.files)
+    const { name, description, quantity, startingPrice, buyNowPrice, bidIncrement, auctionStartTime, auctionEndTime, category, productDetailId } = req.body;
     
-    const imagePaths = req.files.map((file) => `/uploads/${file.filename}`);
+    const uploadedFiles = Array.isArray(req.files) ? req.files : [];
+    const imagePaths = uploadedFiles.map((file) => `/uploads/${file.filename}`);
 
     const requiredFields = [
         { name: 'name', value: name },
@@ -19,7 +37,6 @@ exports.addProduct = async (req, res) => {
         { name: 'auctionEndTime', value: auctionEndTime },
         { name: 'category', value: category },
         { name: 'productDetailId', value: productDetailId },
-        // { name: 'images', value: images }
     ];
 
     const missingFields = requiredFields
@@ -29,13 +46,10 @@ exports.addProduct = async (req, res) => {
     if (missingFields.length > 0) {
         return res.status(400).json({ error: `Missing required fields: ${missingFields.join(', ')}` });
     }
-    if (!req.files || req.files.length === 0) {
+    if (uploadedFiles.length === 0) {
         return res.status(400).json({ error: 'At least one image is required' });
     }
     try {
-        const token = req.headers.authorization.split(' ')[1]; // Assuming the token is passed in the Authorization header as "Bearer <token>"
-        const decoded = jwt.verify(token, process.env.JWT_SECRET); // Verify the token
-
         const newProduct = new Product({
             name,
             description,
@@ -48,158 +62,173 @@ exports.addProduct = async (req, res) => {
             category,
             images: imagePaths,
             status: 'Available',
-            createdBy: decoded.id,
+            createdBy: req.user.id,
             details: productDetailId
-        })
+        });
 
         const savedProduct = await newProduct.save();
-        res.status(201).json(
-            {message: 'Your auction has been listed successfully!',
-             data:savedProduct
-            });
+        res.status(201).json({
+            message: 'Your auction has been listed successfully!',
+            data: savedProduct
+        });
     } catch (error) {
-        res.status(500).json({ error: 'Error adding product', message: error.message });
+        res.status(500).json({ error: 'Error adding product. Please try again later.' });
     }
-}
+};
 
-
-// Edit product controller
 exports.editProduct = async (req, res) => {
-  const { id } = req.params;  // Get product ID from URL parameters
-  const { name, description, quantity, startingPrice, buyNowPrice, bidIncrement, category, images, auctionStartTime, auctionEndTime } = req.body;
+    const { id } = req.params;
+    const { name, description, quantity, startingPrice, buyNowPrice, bidIncrement, category, images, auctionStartTime, auctionEndTime } = req.body;
 
-  try {
-    const updatedProduct = await Product.findByIdAndUpdate(
-      id,
-      {
-        name,
-        description,
-        quantity,
-        startingPrice,
-        buyNowPrice,
-        bidIncrement,
-        category,
-        images,
-        auctionStartTime,
-        auctionEndTime,
-      },
-      { new: true }  // Return the updated document
-    );
+    try {
+        const product = await Product.findById(id);
 
-    if (!updatedProduct) {
-      return res.status(404).json({ message: 'Product not found' });
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+
+        if (!(await canManageProduct(product, req.user.id))) {
+            return res.status(403).json({ error: 'You are not allowed to edit this product' });
+        }
+
+        product.name = name ?? product.name;
+        product.description = description ?? product.description;
+        product.quantity = quantity ?? product.quantity;
+        product.startingPrice = startingPrice ?? product.startingPrice;
+        product.buyNowPrice = buyNowPrice ?? product.buyNowPrice;
+        product.bidIncrement = bidIncrement ?? product.bidIncrement;
+        product.category = category ?? product.category;
+        product.images = images ?? product.images;
+        product.auctionStartTime = auctionStartTime ?? product.auctionStartTime;
+        product.auctionEndTime = auctionEndTime ?? product.auctionEndTime;
+
+        const updatedProduct = await product.save();
+        return res.status(200).json(updatedProduct);
+    } catch (error) {
+        return res.status(500).json({ message: 'Server error' });
     }
-
-    return res.status(200).json(updatedProduct);
-  } catch (error) {
-    console.error('Error updating product:', error);
-    return res.status(500).json({ message: 'Server error' });
-  }
 };
 
 exports.deleteProduct = async (req, res) => {
-    const { id } = req.params;  // Get product ID from URL parameters
+    const { id } = req.params;
   
     try {
-      const deletedProduct = await Product.findByIdAndDelete(id);
+        const product = await Product.findById(id);
   
-      if (!deletedProduct) {
-        return res.status(404).json({ message: 'Product not found' });
-      }
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+
+        if (!(await canManageProduct(product, req.user.id))) {
+            return res.status(403).json({ error: 'You are not allowed to delete this product' });
+        }
+
+        const deletedProduct = await Product.findByIdAndDelete(id);
+
+        // Clean up uploaded image files
+        if (deletedProduct.images && deletedProduct.images.length > 0) {
+            deletedProduct.images.forEach(imagePath => {
+                const fullPath = path.join(__dirname, '..', imagePath);
+                fs.unlink(fullPath, (err) => {
+                    if (err) console.error('Error deleting image:', fullPath);
+                });
+            });
+        }
   
-      return res.status(200).json({ message: 'Product deleted successfully' });
+        return res.status(200).json({ message: 'Product deleted successfully' });
     } catch (error) {
-      console.error('Error deleting product:', error);
-      return res.status(500).json({ message: 'Server error' });
+        return res.status(500).json({ message: 'Server error' });
     }
 };
 
 exports.getProducts = async (req, res) => {
     try {
-      const products = await Product.find();
-      res.status(200).json(products);
+        const { page, limit, status, category } = req.query;
+        const filter = {};
+        if (typeof status === 'string') filter.status = status;
+        if (typeof category === 'string') filter.category = category;
+
+        const result = await PaginationHelper.getPaginatedResponse(
+            Product,
+            filter,
+            page,
+            limit,
+            { createdAt: -1 }
+        );
+
+        res.status(200).json(result);
     } catch (error) {
-      res.status(500).json({ error: 'Error fetching products', message: error.message });
+        res.status(500).json({ error: 'Error fetching products' });
     }
 };
 
 exports.getProductBySlug = async (req, res) => {
-    const { slug } = req.params;  // Get the slug from the request parameters
+    const { slug } = req.params;
 
     try {
-        // Find the product by slug
         const product = await Product.findOne({ slug });
 
-        // If product not found
         if (!product) {
             return res.status(404).json({ error: 'Product not found' });
         }
 
-        // Return the product data
         res.status(200).json(product);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Server Error' });
+        res.status(500).json({ error: 'Server error' });
     }
 };
 
-
-
-// Handle the bid submission
-
 exports.placeBid = async (req, res) => {
-    const { productId, bidAmount, userId } = req.body;
-    console.log('uid',userId)
-    try {
-        // Fetch product details and active bidders' information
-        const product = await Product.findById(productId).populate('activeBidders', 'email'); // Populate to get bidder's emails
+    const { productId, bidAmount } = req.body;
+    const userId = req.user.id;
 
-        // Check if the auction is still active
+    try {
+        const product = await Product.findById(productId).populate('activeBidders', 'email');
+
+        if (!product) {
+            return res.status(404).json({ error: 'Product not found.' });
+        }
+
+        if (product.status !== 'Available') {
+            return res.status(400).json({ error: 'Auction is not available for bidding.' });
+        }
+
+        if (product.createdBy && product.createdBy.toString() === userId.toString()) {
+            return res.status(400).json({ error: 'You cannot bid on your own auction.' });
+        }
+
         const currentTime = Date.now();
         if (product.auctionEndTime < currentTime) {
             return res.status(400).json({ error: 'Auction has ended.' });
         }
 
-        // Check if the bid is valid
-        const validBidAmount = product.currentBid + product.bidIncrement;
+        const validBidAmount = product.numberOfBids > 0
+            ? product.currentBid + product.bidIncrement
+            : product.startingPrice;
+
         if (bidAmount < validBidAmount) {
             return res.status(400).json({ error: `Bid must be at least Rs. ${validBidAmount}` });
         }
 
-        // Update product's current bid, number of bids, and active bidders
         product.currentBid = bidAmount;
         product.numberOfBids += 1;
 
-        // Add the user to active bidders if not already present
-        if (!userId) {
-            const token = req.headers.authorization.split(' ')[1];
-            const decoded = jwt.verify(token, process.env.JWT_SECRET);
-            userId = decoded.id;
-        }
-        if (!userId) {
-            throw new Error("Invalid user ID");
-        }
         if (!Array.isArray(product.activeBidders)) {
             product.activeBidders = [];
         }
         
-        // Filter out null/undefined values from activeBidders
-        product.activeBidders = product.activeBidders.filter(bidder => bidder);
+        product.activeBidders = product.activeBidders.filter(Boolean);
         
-        // Check if the user is already in activeBidders
-        product.activeBidders = product.activeBidders.filter(Boolean); // Remove null/undefined
-        if (!product.activeBidders.some(bidder => bidder.toString() === userId.toString())) {
+        if (!product.activeBidders.some(bidder => getIdString(bidder) === userId.toString())) {
             product.activeBidders.push(userId);
         }
-        console.log('bidder', product.activeBidders)
 
-        // Save the product with updated bid details
         const updatedProduct = await product.save();
         const io = getIo();
         io.emit('bidUpdated', {
             productId,
             currentBid: product.currentBid,
-            activeBidders: product.activeBidders, // Include updated activeBidders array
+            activeBidders: product.activeBidders,
             bidderId: userId,
             numberOfBids: product.numberOfBids
         });
@@ -208,36 +237,54 @@ exports.placeBid = async (req, res) => {
             message: 'Bid placed successfully!',
             product: updatedProduct
         });
+
+        // Send email notification to product creator (non-blocking)
+        try {
+            const creator = await User.findById(product.createdBy);
+            if (creator && creator.email) {
+                sendEmail(creator.email, 'New Bid on Your Product', 'bidPlaced', {
+                    bidAmount,
+                    productName: product.name,
+                });
+            }
+        } catch (emailErr) {
+            // Email failure should not affect bid response
+        }
     } catch (error) {
-        console.error(error);
         res.status(500).json({ error: 'Error placing the bid. Please try again later.' });
     }
 };
 
 
 exports.getProductsByUser = async (req, res) => {
-  try {
-    // Extract userId from request parameters or query
-    const { userId } = req.params;
+    try {
+        const { userId } = req.params;
+        const { page, limit } = req.query;
 
-    if (!userId) {
-      return res.status(400).json({ error: 'User ID is required.' });
+        if (!userId || typeof userId !== 'string') {
+            return res.status(400).json({ error: 'Valid User ID is required.' });
+        }
+
+        const result = await PaginationHelper.getPaginatedResponse(
+            Product,
+            { createdBy: userId },
+            page,
+            limit,
+            { createdAt: -1 },
+            { path: 'createdBy', select: 'username email' }
+        );
+
+        if (result.pagination.total === 0) {
+            return res.status(404).json({ message: 'No products found for this user.' });
+        }
+
+        res.status(200).json({
+            message: 'Products fetched successfully.',
+            ...result,
+        });
+    } catch (error) {
+        res.status(500).json({ error: 'Server error. Please try again later.' });
     }
-
-    const products = await Product.find({ createdBy: userId }).populate('createdBy', 'username email'); // Populate username and email from the User model
-
-    if (!products.length) {
-      return res.status(404).json({ message: 'No products found for this user.' });
-    }
-
-    res.status(200).json({
-      message: 'Products fetched successfully.',
-      products,
-    });
-  } catch (error) {
-    console.error('Error fetching products by user:', error);
-    res.status(500).json({ error: 'Server error. Please try again later.' });
-  }
 };
 
 
@@ -250,34 +297,33 @@ exports.endAuction = async (req, res) => {
             return res.status(404).json({ error: 'Product not found' });
         }
 
+        if (!(await canManageProduct(product, req.user.id))) {
+            return res.status(403).json({ error: 'You are not allowed to end this auction' });
+        }
+
         const currentTime = new Date();
-        console.log('pro',product)
-        console.log('ct', currentTime, 'at', product.auctionEndTime)
-        // Case 1: Auction time has ended
+
         if (currentTime >= product.auctionEndTime || product.currentBid >= product.buyNowPrice) { 
-            // If Buy Now Price is met, auction ends early
-
-            if (product.status === 'Available') { // Only process if auction is still 'Available'
-
-                // Case 2: Buy Now price reached or exceeded
+            if (product.status === 'Available') {
                 if (product.currentBid >= product.buyNowPrice) {
-                    const winningBidder = product.activeBidders[product.activeBidders.length - 1]; // Assuming last bidder wins
+                    const winningBidder = product.activeBidders[product.activeBidders.length - 1];
+                    if (winningBidder) {
+                        product.finalPrice = product.currentBid;
+                        product.boughtBy = winningBidder;
+                        product.status = 'Sold';
+                    } else {
+                        product.status = 'Withdrawn';
+                    }
+                } else if (product.activeBidders.length > 0) {
+                    const winningBidder = product.activeBidders[product.activeBidders.length - 1];
                     product.finalPrice = product.currentBid;
                     product.boughtBy = winningBidder;
                     product.status = 'Sold';
-                } 
-                // Case 3: No bids placed, or Buy Now not met
-                else if (product.activeBidders.length > 0) {
-                    const winningBidder = product.activeBidders[product.activeBidders.length - 1]; // Last bidder wins
-                    product.finalPrice = product.currentBid;
-                    product.boughtBy = winningBidder;
-                    product.status = 'Sold';
-                }
-                // Case 4: No bids at all, mark as Withdrawn
-                else {
+                } else {
                     product.status = 'Withdrawn';
                 }
             }
+
             const io = getIo();
             io.emit('auctionEnded', {
                 productId: productId,
@@ -285,25 +331,21 @@ exports.endAuction = async (req, res) => {
                 status: product.status,
                 boughtBy: product.boughtBy,
             });
+
             await product.save();
             return res.status(200).json({ message: 'Auction ended successfully', product });
         } else {
             return res.status(400).json({ error: 'Auction has not ended yet!' });
         }
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: 'Server error' });
     }
 };
-
-
 
 exports.buyNow = async (req, res) => {
     try {
         const { productId } = req.params;
-        console.log('header',req.headers.authorization)
-        const token = req.headers.authorization.split(' ')[1];
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const buyerId = decoded.id;
+        const buyerId = req.user.id;
         const product = await Product.findById(productId);
 
         if (!product) {
@@ -314,10 +356,15 @@ exports.buyNow = async (req, res) => {
             return res.status(400).json({ error: 'Product is no longer available' });
         }
 
+        if (product.createdBy && product.createdBy.toString() === buyerId.toString()) {
+            return res.status(400).json({ error: 'You cannot buy your own auction.' });
+        }
+
         if (product.buyNowPrice > 0) {
             product.finalPrice = product.buyNowPrice;
             product.boughtBy = buyerId;
             product.status = 'Sold';
+
             const io = getIo();
             io.emit('productSold', {
                 productId: productId,
@@ -325,13 +372,13 @@ exports.buyNow = async (req, res) => {
                 buyerId: buyerId,
                 status: product.status,
             });
+
             await product.save();
             return res.status(200).json({ message: 'Product purchased successfully', product });
         } else {
             return res.status(400).json({ error: 'Buy Now option is not available for this product' });
         }
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: 'Server error' });
     }
 };
-

@@ -4,12 +4,15 @@ const path = require('path');
 // Set storage engine
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        console.log('Saving file to:', './uploads/');
         cb(null, './uploads/');
     },
     filename: (req, file, cb) => {
-        const filename = `${Date.now()}-${file.originalname}`;
-        console.log('Saving file as:', filename);
+        const ext = path.extname(file.originalname).toLowerCase();
+        const baseName = path.basename(file.originalname, ext)
+            .replace(/[^a-z0-9_-]/gi, '-')
+            .replace(/-+/g, '-')
+            .slice(0, 80);
+        const filename = `${Date.now()}-${baseName}${ext}`;
         cb(null, filename);
     },
 });

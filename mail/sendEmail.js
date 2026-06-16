@@ -1,23 +1,17 @@
-// sendEmail.js
 const transporter = require('./transporter');
 const { getEmailTemplate } = require('./getEmailTemplate');
 
 async function sendEmail(to, subject, type, details) {
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) return;
     try {
-        console.log('working');
         const emailBody = getEmailTemplate(type, details);
-
-        const mailOptions = {
+        await transporter.sendMail({
             from: process.env.EMAIL_USER,
-            to, // recipient's email
-            subject, // subject of the email
-            html: emailBody, // HTML body of the email
-        };
-
-        await transporter.sendMail(mailOptions);
-        console.log('Email sent successfully to', to);
+            to, subject,
+            html: emailBody,
+        });
     } catch (error) {
-        console.error('Error sending email:', error);
+        console.warn('Email not sent (check SMTP setup):', error.message);
     }
 }
 

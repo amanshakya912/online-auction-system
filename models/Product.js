@@ -88,15 +88,18 @@ const productSchema = new mongoose.Schema({
         ref: 'User', 
         required: false
     },
-    createdAt: {
-        type: Date,
-        default: Date.now
-    },
-    updatedAt: {
-        type: Date,
-        default: Date.now
+    isFlagged: {
+        type: Boolean,
+        default: false,
     }
 }, { timestamps: true })
+
+// Indexes
+productSchema.index({ auctionEndTime: 1 });
+productSchema.index({ status: 1 });
+productSchema.index({ status: 1, auctionEndTime: 1 });
+productSchema.index({ category: 1 });
+productSchema.index({ createdBy: 1 });
 
 // Automatically generate and ensure the slug is unique before saving
 productSchema.pre('save', async function (next) {

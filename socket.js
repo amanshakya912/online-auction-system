@@ -3,9 +3,16 @@ const socketIo = require('socket.io');
 let io;
 
 const initSocket = (server) => {
+  const allowedOrigins = [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    process.env.FRONTEND_URL,
+  ].filter(Boolean);
+
   io = socketIo(server, {
     cors: {
-      origin: '*',
+      origin: allowedOrigins,
+      credentials: true,
     },
   });
 

@@ -1,18 +1,22 @@
 const express = require('express')
 const router = express.Router();
 const userController = require('../controllers/userController');
-const upload = require('../middlewares/uploadMiddleWare');
+const emailVerificationController = require('../controllers/emailVerificationController');
+const authMiddleware = require('../middlewares/authMiddleware');
+const adminMiddleware = require('../middlewares/adminMiddleware');
+const optionalAuthMiddleware = require('../middlewares/optionalAuthMiddleware');
+const { validateSignUp, validateSignIn } = require('../middlewares/validationMiddleware');
 
-router.post('/signin', userController.signIn)
+// Public routes
+router.post('/signin', validateSignIn, userController.signIn)
+router.post('/signup', validateSignUp, userController.signUp)
+router.get('/users', authMiddleware, adminMiddleware, userController.getAllUsers);
+router.get('/user', optionalAuthMiddleware, userController.getUser);
+router.get('/verify-email', emailVerificationController.verifyEmail);
+router.post('/resend-verification', optionalAuthMiddleware, emailVerificationController.resendVerification);
 
-router.post('/signup', userController.signUp)
-
-router.get('/users', userController.getAllUsers);
-
-router.get('/user', userController.getUser);
-
-router.put('/user/edit', userController.editUser);
-
-router.delete('/user/delete', userController.deleteUser)
+// Protected routes (require authentication)
+router.put('/user/edit', authMiddleware, userController.editUser);
+router.delete('/user/delete', authMiddleware, userController.deleteUser)
 
 module.exports = router;
