@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import Footer from "../Components/Footer";
 import Header from "../Components/Header";
@@ -154,7 +154,7 @@ const BrowseAuction = () => {
             try {
                 setLoading(true);
                 const res = await Api.getProducts();
-                setAllAuctions(res);
+                setAllAuctions(res.data || res);
             } catch (e) {
                 console.error("Error fetching auctions:", e);
             } finally {

@@ -308,7 +308,7 @@ const CreateAuction = () => {
                       </div>
                     </>
                   ) : (
-                    <div className="py-10"><Loader /></div>
+                    <div className="py-10"><Loader fullScreen={false} /></div>
                   )}
                 </div>
               ) : (

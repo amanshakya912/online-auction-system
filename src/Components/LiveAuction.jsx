@@ -39,7 +39,7 @@ const LiveAuction = () => {
                 setLoading(true);
                 const res = await Api.getProducts();
                 const currentTime = new Date();
-                const liveProducts = res.filter((p) => {
+                const liveProducts = (res.data || res).filter((p) => {
                     const end = new Date(p.auctionEndTime);
                     const start = new Date(p.auctionStartTime);
                     return currentTime < end && currentTime >= start && p.status !== "Sold";
@@ -60,10 +60,6 @@ const LiveAuction = () => {
                 {/* Section header */}
                 <div className="flex items-end justify-between mb-10">
                     <div>
-                        <div className="flex items-center gap-2 mb-2">
-                            <span className="w-1.5 h-1.5 rounded-full bg-status-live animate-pulse" />
-                            <span className="text-xs font-semibold text-status-live uppercase tracking-[0.18em]">Live Now</span>
-                        </div>
                         <h2 className="font-lora font-bold text-3xl md:text-4xl text-white">Live Auctions</h2>
                     </div>
                     <Link

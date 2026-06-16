@@ -109,10 +109,19 @@ const addProductDetail = async (features) => {
     }
 }
 
+let productsCache = null;
+let productsCacheTime = 0;
+const CACHE_TTL = 5000;
+
 const getProducts = async () => {
+    if (productsCache && Date.now() - productsCacheTime < CACHE_TTL) {
+        return productsCache;
+    }
     try {
         const res = await axios.get('/products')
-        return res?.data;
+        productsCache = res?.data;
+        productsCacheTime = Date.now();
+        return productsCache;
     } catch (e) {
         throw e;
     }

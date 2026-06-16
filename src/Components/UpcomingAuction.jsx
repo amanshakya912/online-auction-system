@@ -39,7 +39,7 @@ const UpcomingAuction = () => {
                 setLoading(true);
                 const res = await Api.getProducts();
                 const currentTime = new Date();
-                const upcomingProducts = res.filter((p) => currentTime < new Date(p.auctionStartTime));
+                const upcomingProducts = (res.data || res).filter((p) => currentTime < new Date(p.auctionStartTime));
                 setProducts(upcomingProducts);
             } catch (e) {
                 console.error("Error fetching upcoming auctions:", e);
@@ -64,10 +64,6 @@ const UpcomingAuction = () => {
                 {/* Section header */}
                 <div className="flex items-end justify-between mb-10">
                     <div>
-                        <div className="flex items-center gap-2 mb-2">
-                            <span className="w-1.5 h-1.5 rounded-full bg-status-upcoming animate-pulse" />
-                            <span className="text-xs font-semibold text-status-upcoming uppercase tracking-[0.18em]">Starting Soon</span>
-                        </div>
                         <h2 className="font-lora font-bold text-3xl md:text-4xl text-white">Upcoming Auctions</h2>
                     </div>
                     <Link

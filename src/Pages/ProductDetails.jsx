@@ -455,12 +455,6 @@ const ProductDetails = () => {
                                         </div>
                                     )}
 
-                                    {/* Trust badge */}
-                                    <div className="flex items-center gap-2 text-xs text-text-disabled">
-                                        <FontAwesomeIcon icon={faShieldHalved} className="text-semantic-success" />
-                                        Secure bidding · Verified seller · Buyer protection
-                                    </div>
-
                                     {/* Action buttons */}
                                     {same ? (
                                         sold ? (
@@ -490,7 +484,7 @@ const ProductDetails = () => {
                                     ) : sold ? (
                                         buyerId === userid ? (
                                             <Link to="/checkout">
-                                                <button className="w-full py-3.5 bg-semantic-success hover:bg-semantic-success/80 text-white font-semibold text-sm rounded-xl transition-all duration-150 flex items-center justify-center gap-2">
+                                                <button className="w-full py-3.5 bg-primary text-white font-semibold text-sm rounded-xl transition-all duration-150 flex items-center justify-center gap-2">
                                                     <FontAwesomeIcon icon={faCartShopping} />
                                                     Proceed to Checkout
                                                 </button>

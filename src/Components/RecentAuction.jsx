@@ -17,7 +17,7 @@ const RecentAuction = () => {
                 setLoading(true);
                 const res = await Api.getProducts();
                 const currentTime = new Date();
-                const recentProducts = res.filter((p) => {
+                const recentProducts = (res.data || res).filter((p) => {
                     const endTime = new Date(p.auctionEndTime);
                     return currentTime > endTime || ["Sold", "Withdrawn"].includes(p.status);
                 });
