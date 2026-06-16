@@ -1,11 +1,13 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import Footer from "../Components/Footer"
-import Header from "../Components/Header"
-import img1 from "../images/mobile1.png"
-import { useEffect, useState } from "react"
-import Countdown from 'react-countdown';
-import { faCartShopping, faGavel, faHeart, faUser } from "@fortawesome/free-solid-svg-icons";
-import ReactStars from "react-rating-stars-component";
+import Footer from "../Components/Footer";
+import Header from "../Components/Header";
+import { useEffect, useState } from "react";
+import Countdown from "react-countdown";
+import {
+    faCartShopping, faGavel, faUser, faFire, faClock,
+    faChevronRight, faTag, faLayerGroup, faBolt,
+    faUsers, faArrowLeft, faShieldHalved,
+} from "@fortawesome/free-solid-svg-icons";
 import RecentAuction from "../Components/RecentAuction";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Api from "../utils/Api";
@@ -13,704 +15,591 @@ import Helper from "../utils/Helper";
 import BidModal from "../Components/BidModal";
 import EditProductModal from "../Components/EditProductModal";
 import ConfirmationModal from "../Components/ConfirmationModal";
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer, toast } from "react-toastify";
 import ActiveBiddersModal from "../Components/ActiveBiddersModal";
 import axios from "axios";
-import io from 'socket.io-client';
+import io from "socket.io-client";
 import ConfirmModal from "../Components/ConfirmModal";
+import { motion, AnimatePresence } from "framer-motion";
 
 const socket = io(Helper.BASE_URL);
 
+// ─── Countdown renderer ───────────────────────────────────────────────────────
+const CountdownRenderer = ({ days, hours, minutes, seconds }) => (
+    <div className="flex items-center gap-1.5">
+        {[{ val: days, label: "Days" }, { val: hours, label: "Hrs" }, { val: minutes, label: "Min" }, { val: seconds, label: "Sec" }]
+            .map(({ val, label }, i) => (
+                <div key={label} className="flex items-center gap-1.5">
+                    <div className="flex flex-col items-center bg-background-primary rounded-lg px-3 py-2 min-w-[52px] border border-white/8">
+                        <span className="font-lora font-bold text-white text-xl leading-none">
+                            {String(val).padStart(2, "0")}
+                        </span>
+                        <span className="text-[9px] text-text-disabled uppercase tracking-wider mt-1">{label}</span>
+                    </div>
+                    {i < 3 && <span className="text-text-disabled font-bold mb-3">:</span>}
+                </div>
+            ))}
+    </div>
+);
+
+// ─── Spec row ─────────────────────────────────────────────────────────────────
+const SpecRow = ({ label, value }) => (
+    <div className="flex items-center justify-between py-3 border-b border-white/5 last:border-0">
+        <span className="text-sm text-text-secondary">{label}</span>
+        <span className="text-sm text-white font-medium">{value}</span>
+    </div>
+);
+
+const PRICE_RANGE_MAP = {
+    0: "Rs. 5,000 – 15,000",
+    1: "Rs. 15,000 – 25,000",
+    2: "Rs. 25,000 – 50,000",
+    3: "Rs. 50,000+",
+};
+
+// ─── Main component ───────────────────────────────────────────────────────────
 const ProductDetails = () => {
-    const userid = localStorage.getItem('id');
-    const un = localStorage.getItem('username');
-    console.log('Uid',userid, un)
-    const token = localStorage.getItem('token')
-    const { slug } = useParams()
-    const [liveBid, setLiveBid] = useState(0)
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [show, setShow] = useState(false)
-    const [quantity, setQuantity] = useState(1);
-    const [details, setDetails] = useState()
-    const [auctionEnd, setAuctionEnd] = useState(false)
-    const [countdownDate, setCountdownDate] = useState()
-    const [creatorId, setCreatorId] = useState(null)
-    const [creator, setCreator] = useState(null)
-    const [same, setSame] = useState(false)
-    const [showModal, setShowModal] = useState(false);
-    const [refreshKey, setRefreshKey] = useState(0);
-    const [prodDetailsId, setProdDetailsId] = useState(null)
-    const [prodDetails, setProdDetails] = useState(null)
-    const [openDModal, setOpenDModal] = useState(false)
-    const [prodNotFound, setProdNotFound] = useState(false)
-    const [activeBidders, setActiveBidders] = useState([])
-    const [usernames, setUsernames] = useState([]);
-    const [live, setLive] = useState(false)
-    const [isBidderModal, setIsBidderModal] = useState(false);
-    const [currentBid, setCurrentBid] = useState()
-    const [maxPrice, setMaxPrice] = useState()
-    const [buyerId, setBuyerId] = useState()
-    const [finalPrice, setFinalPrice] = useState()
-    const [sold, setSold] = useState(false)
-    const [withdrawn, setWithdrawn] = useState(false)
-    const [winnerUserName, setWinnerUserName] = useState()
-    const [latestBidder, setLatestBidder] = useState()
-    const [latestBidderUsername, setLatestBidderUsername] = useState()
-    const [buyNowModal, setBuyNowModal] = useState(false)
-    const openBidderModal = () => setIsBidderModal(true);
-    const closeBidderModal = () => setIsBidderModal(false);
+    const userid = localStorage.getItem("id");
+    const token = localStorage.getItem("token");
+    const { slug } = useParams();
     const navigate = useNavigate();
-    const handleBidNowClick = () => {
-        if (token) {
-            if (live) {
-                setIsModalOpen(true);
-            } else {
-                toast.info('Auction is not live yet!')
-            }
-        } else {
-            toast.info('You need to be signed in to place a bid!')
-        }
-    };
-    const handleBuyNowClick = () => {
-        if (token) {
-            if (live) {
-                setBuyNowModal(true)
-            } else {
-                toast.info('Auction is not live yet!')
-            }
-        } else {
-            toast.info('You need to be signed in to buy the product!')
-        }
-    }
-    const handleConfirm = async () => {
-        try {
-            const res = await Api.handleBuyNow(prodDetailsId)
-            console.log(res)
-            toast.success('You have bought the product!!')
-            setRefreshKey((prevKey) => prevKey + 1);
-        } catch(e) {
-            console.log(e)
-        }
-        setBuyNowModal(false);
-    };
 
-    const handleClose = () => {
-        setBuyNowModal(false); // Close the modal if the user cancels
-    };
-    const handleAddToCartClick = () => {
-        if (token) {
-            if (live) {
-                setIsModalOpen(true);
-            } else {
-                toast.info('Auction is not live yet!')
-            }
-        } else {
-            toast.info('You need to be signed in to add product to the cart!')
-        }
-    }
-    const handleCloseModal = () => {
-        setIsModalOpen(false); // Close the modal
-    };
+    const [details, setDetails] = useState(null);
+    const [prodDetails, setProdDetails] = useState(null);
+    const [prodDetailsId, setProdDetailsId] = useState(null);
+    const [creatorId, setCreatorId] = useState(null);
+    const [creator, setCreator] = useState(null);
+    const [same, setSame] = useState(false);
 
-    const openDeleteModal = () => setOpenDModal(true);
-    const closeDeleteModal = () => setOpenDModal(false);
-    const handleDeleteProduct = async () => {
-        try {
-            await Api.deleteProduct(prodDetailsId);
-            navigate('/');
-            closeDeleteModal();
-        } catch (error) {
-            console.error('Error deleting product:', error);
-        }
-    };
+    const [live, setLive] = useState(false);
+    const [auctionEnd, setAuctionEnd] = useState(false);
+    const [countdownDate, setCountdownDate] = useState(null);
+    const [sold, setSold] = useState(false);
+    const [withdrawn, setWithdrawn] = useState(false);
 
-    const openModal = () => setShowModal(true);
-    const closeModal = () => setShowModal(false);
+    const [currentBid, setCurrentBid] = useState(null);
+    const [maxPrice, setMaxPrice] = useState(null);
+    const [finalPrice, setFinalPrice] = useState(null);
+    const [buyerId, setBuyerId] = useState(null);
+    const [winnerUserName, setWinnerUserName] = useState(null);
+    const [latestBidder, setLatestBidder] = useState(null);
+    const [latestBidderUsername, setLatestBidderUsername] = useState(null);
+    const [activeBidders, setActiveBidders] = useState([]);
+    const [usernames, setUsernames] = useState([]);
 
-    const handleSave = () => {
-        // onSave(updatedProduct);
-        toast.success('Product has been updated successfully!')
-        setRefreshKey((prevKey) => prevKey + 1);
-    };
+    const [quantity, setQuantity] = useState(1);
+    const [refreshKey, setRefreshKey] = useState(0);
+    const [prodNotFound, setProdNotFound] = useState(false);
 
-    const incrementQuantity = () => {
-        setQuantity(prevQuantity => prevQuantity + 1);
-    };
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [showModal, setShowModal] = useState(false);
+    const [openDModal, setOpenDModal] = useState(false);
+    const [isBidderModal, setIsBidderModal] = useState(false);
+    const [buyNowModal, setBuyNowModal] = useState(false);
 
-    // Function to handle decrement
-    const decrementQuantity = () => {
-        if (quantity > 1) {
-            setQuantity(prevQuantity => prevQuantity - 1);
-        }
-    };
-    const renderer = ({ days, hours, minutes, seconds }) => {
-        return (
-            <div className="grid grid-cols-4 bg-[#212121] text-white p-2 text-center">
-                <div className="col-span-1 border-0 border-r">
-                    {days}D
-                </div>
-                <div className="col-span-1 border-0 border-r">
-                    {hours}H
-                </div>
-                <div className="col-span-1 border-0 border-r">
-                    {minutes}M
-                </div>
-                <div className="col-span-1">
-                    {seconds}S
-                </div>
-            </div>
-        );
-    };
-
-
+    // ── fetch product ──────────────────────────────────────────────────────────
     useEffect(() => {
         const productDetails = async () => {
             try {
-                const res = await Api.getProductBySlug(slug)
-                console.log('res', res)
-                setDetails(res)
-                auctionCountdown(res.auctionStartTime, res.auctionEndTime)
-                setCreatorId(res.createdBy)
-                setProdDetailsId(res._id)
-                setActiveBidders(res.activeBidders)
-                setCurrentBid(res.currentBid)
-                setMaxPrice(res.buyNowPrice)
-                if (res.finalPrice) {
-                    setFinalPrice(res.finalPrice)
-                }
-                if (res.boughtBy) {
-                    setBuyerId(res.boughtBy)
-                }
-                if (res.status == 'Sold') {
-                    setSold(true)
-                } else if (res.status == 'Withdrawn') {
-                    setWithdrawn(true)
-                }
-            } catch (e) {
-                console.log('err', e)
-                setProdNotFound(true)
+                const res = await Api.getProductBySlug(slug);
+                setDetails(res);
+                auctionCountdown(res.auctionStartTime, res.auctionEndTime);
+                setCreatorId(res.createdBy);
+                setProdDetailsId(res._id);
+                setActiveBidders(res.activeBidders);
+                setCurrentBid(res.currentBid);
+                setMaxPrice(res.buyNowPrice);
+                if (res.finalPrice) setFinalPrice(res.finalPrice);
+                if (res.boughtBy) setBuyerId(res.boughtBy);
+                if (res.status === "Sold") setSold(true);
+                else if (res.status === "Withdrawn") setWithdrawn(true);
+            } catch {
+                setProdNotFound(true);
             }
-        }
-        productDetails()
-    }, [refreshKey])
+        };
+        productDetails();
+    }, [refreshKey]);
 
     useEffect(() => {
         const fetchUsernames = async () => {
-            try {
-                const fetchedUsernames = await Promise.all(
-                    activeBidders.map(async (bidderId) => {
-                        try {
-                            const res = await Api.getUserById(bidderId);
-                            // console.log('API Response for bidderId', bidderId, ':', res);
-                            return res.userName;  // Adjust this based on actual response structure
-                        } catch (error) {
-                            // console.error(`Error fetching username for bidder ${bidderId}:`, error);
-                            return null;  // Return null or a default value in case of error
-                        }
-                    })
-                );
-                console.log('Fetched Usernames:', fetchedUsernames);
-                setUsernames(fetchedUsernames.filter(username => username !== null));  // Filter out nulls if any
-            } catch (error) {
-                console.error('Error fetching usernames:', error);
-            }
+            const names = await Promise.all(
+                activeBidders.map(async (id) => {
+                    try { return (await Api.getUserById(id)).userName; }
+                    catch { return null; }
+                })
+            );
+            setUsernames(names.filter(Boolean));
         };
-
         fetchUsernames();
     }, [activeBidders]);
 
     useEffect(() => {
-        const getProductCreator = async () => {
-            try {
-                const res = await Api.getUserById(creatorId)
-                console.log('creator', res);
-                setCreator(res)
-            } catch (e) {
-                console.log('err', e)
-            }
-        }
-        if (creatorId) {
-            getProductCreator()
-            if (creatorId == userid) {
-                console.log('hey', creatorId, userid)
-                setSame(true)
-            }
-        }
-    }, [creatorId])
-    useEffect(() => {
-        const getProductDetails = async () => {
-            try {
-                const res = await Api.getProductDetailsById(prodDetailsId)
-                console.log('prod details', res)
-                setProdDetails(res.productDetails)
-            } catch (e) {
-                console.log('err', e)
-            }
-        }
-        if (prodDetailsId) {
-            getProductDetails()
-        }
-    }, [prodDetailsId])
-    const auctionCountdown = (auctionStartTime, auctionEndTime) => {
-        const currentTime = Date.now(); // Get current time in milliseconds
-        // Determine which date to countdown to
-        if (currentTime < new Date(auctionStartTime).getTime()) {
-            // Auction hasn't started yet
-            console.log('st', auctionStartTime)
-            setCountdownDate(new Date(auctionStartTime).getTime());
-            console.log('ct', countdownDate)
-        } else if (currentTime >= new Date(auctionStartTime).getTime() && currentTime < new Date(auctionEndTime).getTime()) {
-            // Auction is live
-            setLive(true)
-            setCountdownDate(new Date(auctionEndTime).getTime());
-        } else {
-            setAuctionEnd(true)
-        }
-    }
-    
-    const handleBidSubmit = async (bidAmount) => {
-        // Handle the bid submission logic here
-        console.log('Bid Amount:', bidAmount);
-        const productId = details?._id
-        try {
-            const res = await Api.placeBid(productId, bidAmount);
-            console.log(res)
-            toast.success('Your Bid Has been registered successfully!!')
-            setRefreshKey((prevKey) => prevKey + 1);
-        } catch (e) {
-            console.log(e)
-        }
-    };
+        if (!creatorId) return;
+        Api.getUserById(creatorId).then(setCreator).catch(() => {});
+        setSame(creatorId === userid);
+    }, [creatorId]);
 
-    useEffect(()=>{
-        const getWinnerUserName = async () => {
-            try {
-                const res = await Api.getUserById(buyerId)
-                setWinnerUserName(res.userName)
-            } catch (e) {
-                console.log(e)
-            }
-        }
-        if(buyerId) {
-            getWinnerUserName()
-        }
-    }, [buyerId])
     useEffect(() => {
-        const handleAuctionEnd = async () => {
-            try {
-                const res = await Api.handleAuctionEnd(prodDetailsId)
-                console.log('res', res)
-                // toast.success('You have succesfully won the auction!')
-            } catch (error) {
-                console.log('err', error)
-                if (axios.isAxiosError(error)) {
-                    if (error.response && error.response.data && error.response.data.error) {
-                        toast.error(error.response.data.error);
-                    } else if (error.response) {
-                        toast.error(`Error ${error.response.status}: ${error.response.statusText}`);
-                    } else {
-                        toast.error('Network error. Please try again.');
-                    }
-                } else {
-                    toast.error('An unexpected error occurred. Please try again.');
-                }
-            }
-        }
-        if (currentBid !== null && maxPrice !== null) {
-            if (currentBid >= maxPrice) {
-                console.log('Current bid matches or exceeds the max price. Auction may end or user can buy now.');
-                handleAuctionEnd()
-            } else {
-                console.log('Current bid updated:', currentBid);
-            }
+        if (!prodDetailsId) return;
+        Api.getProductDetailsById(prodDetailsId).then((r) => setProdDetails(r.productDetails)).catch(() => {});
+    }, [prodDetailsId]);
+
+    useEffect(() => {
+        if (!buyerId) return;
+        Api.getUserById(buyerId).then((r) => setWinnerUserName(r.userName)).catch(() => {});
+    }, [buyerId]);
+
+    useEffect(() => {
+        if (!latestBidder) return;
+        Api.getUserById(latestBidder).then((r) => setLatestBidderUsername(r.userName)).catch(() => {});
+    }, [latestBidder]);
+
+    // buy-now auto-end
+    useEffect(() => {
+        if (currentBid !== null && maxPrice !== null && currentBid >= maxPrice) {
+            handleAuctionEnd();
         }
     }, [currentBid, maxPrice]);
 
-    const handleCountdownComplete = () => {
-        if (!live) {
-            // Auction has just started
+    // socket
+    useEffect(() => {
+        if (!prodDetailsId) return;
+        socket.on("bidUpdated", ({ productId: id, currentBid, activeBidders, numberOfBids, bidderId }) => {
+            if (id !== prodDetailsId) return;
+            setDetails((p) => ({ ...p, numberOfBids, activeBidders, currentBid }));
+            setActiveBidders(activeBidders);
+            setLatestBidder(bidderId);
+        });
+        socket.on("auctionEnded", ({ productId: id, finalPrice, status, boughtBy }) => {
+            if (id !== prodDetailsId) return;
+            setDetails((p) => ({ ...p, finalPrice, status, boughtBy }));
+            setAuctionEnd(true);
+            if (status === "Sold") { setSold(true); setFinalPrice(finalPrice); setBuyerId(boughtBy); }
+            else if (status === "Withdrawn") setWithdrawn(true);
+        });
+        socket.on("productSold", ({ productId: id, finalPrice, buyerId, status }) => {
+            if (id !== prodDetailsId) return;
+            setDetails((p) => ({ ...p, finalPrice, status, boughtBy: buyerId }));
+            setSold(true); setFinalPrice(finalPrice); setBuyerId(buyerId);
+        });
+        return () => { socket.off("bidUpdated"); socket.off("auctionEnded"); socket.off("productSold"); };
+    }, [prodDetailsId]);
+
+    // ── helpers ───────────────────────────────────────────────────────────────
+    const auctionCountdown = (start, end) => {
+        const now = Date.now();
+        if (now < new Date(start).getTime()) {
+            setCountdownDate(new Date(start).getTime());
+        } else if (now < new Date(end).getTime()) {
             setLive(true);
-            setCountdownDate(new Date(details.auctionEndTime).getTime());
+            setCountdownDate(new Date(end).getTime());
         } else {
-            // Auction has ended
-            handleAuctionEnd();
+            setAuctionEnd(true);
         }
     };
-    
-    useEffect(() => {
-        // Re-render countdown component when countdownDate changes
-        console.log('Updated Countdown Date:', countdownDate);
-    }, [countdownDate]);
 
     const handleAuctionEnd = async () => {
         try {
             const res = await Api.handleAuctionEnd(details._id);
-            console.log('Auction ended:', res);
             setAuctionEnd(true);
-            if (res.status === 'Sold') {
-                setSold(true);
-                setFinalPrice(res.product.finalPrice);
-                setBuyerId(res.product.boughtBy);
-            } else if (res.status === 'Withdrawn') {
-                setWithdrawn(true);
-            }
-        } catch (error) {
-            console.error('Failed to end auction:', error);
+            if (res.status === "Sold") { setSold(true); setFinalPrice(res.product.finalPrice); setBuyerId(res.product.boughtBy); }
+            else if (res.status === "Withdrawn") setWithdrawn(true);
+        } catch { console.error("Failed to end auction"); }
+    };
+
+    const handleCountdownComplete = () => {
+        if (!live) {
+            setLive(true);
+            setCountdownDate(new Date(details.auctionEndTime).getTime());
+        } else {
+            handleAuctionEnd();
         }
     };
-    
-    useEffect(() => {
-        if (!prodDetailsId) return; // Ensure prodDetailsId is available before setting up the listener
-    
-        socket.on('bidUpdated', ({ productId: updatedId, currentBid, activeBidders, numberOfBids,bidderId }) => {
-            console.log('Socket event received:', { productId: prodDetailsId, updatedId, currentBid, numberOfBids });
-            if (updatedId === prodDetailsId) {
-                setDetails((prevDetails) => ({
-                    ...prevDetails,
-                    numberOfBids: numberOfBids,
-                    activeBidders: activeBidders,
-                    currentBid: currentBid,
-                }));
-                setActiveBidders(activeBidders);
-                setLatestBidder(bidderId)
-            }
-        });
 
-        socket.on('auctionEnded', ({ productId: updatedId, finalPrice, status, boughtBy }) => {
-            console.log('Auction ended:', { productId: prodDetailsId, updatedId, finalPrice, status, boughtBy });
-            if (updatedId === prodDetailsId) {
-                setDetails((prevDetails) => ({
-                    ...prevDetails,
-                    finalPrice: finalPrice,
-                    status: status,
-                    boughtBy: boughtBy,
-                }));
-                setAuctionEnd(true)
-                if (status === 'Sold') {
-                    setSold(true);
-                    setFinalPrice(finalPrice);
-                    setBuyerId(boughtBy);
-                } else if (status === 'Withdrawn') {
-                    setWithdrawn(true);
-                }
-            }
-        });
+    const handleBidSubmit = async (bidAmount) => {
+        try {
+            await Api.placeBid(details._id, bidAmount);
+            toast.success("Bid placed successfully!");
+            setRefreshKey((k) => k + 1);
+        } catch { toast.error("Failed to place bid."); }
+    };
 
-        socket.on('productSold', ({ productId, finalPrice, buyerId, status }) => {
-            console.log('Product sold:', { productId: prodDetailsId, finalPrice, buyerId, status });
-    
-            if (productId === prodDetailsId) {
-                setDetails((prevDetails) => ({
-                    ...prevDetails,
-                    finalPrice: finalPrice,
-                    status: status,
-                    boughtBy: buyerId, // Assuming buyerId is the ID of the buyer
-                }));
-                setSold(true);
-                setFinalPrice(finalPrice);
-                setBuyerId(buyerId);
-            }
-        });
+    const handleConfirm = async () => {
+        try {
+            await Api.handleBuyNow(prodDetailsId);
+            toast.success("Product purchased!");
+            setRefreshKey((k) => k + 1);
+        } catch { toast.error("Purchase failed."); }
+        setBuyNowModal(false);
+    };
 
-        return () => {
-            socket.off('bidUpdated');
-            socket.off('auctionEnded');
-            socket.off('productSold');
-        };
-    }, [prodDetailsId]);
+    const handleDeleteProduct = async () => {
+        try {
+            await Api.deleteProduct(prodDetailsId);
+            navigate("/");
+        } catch { console.error("Error deleting product"); }
+    };
 
-    useEffect(()=>{
-        const getLatestBidder = async () => {
-            try {
-                console.log('lb',latestBidder)
-                const res = await Api.getUserById(latestBidder)
-                setLatestBidderUsername(res.userName)
-            } catch (e) {
-                console.log(e)
-            }
-        }
-        if(latestBidder) {
-            getLatestBidder()
-        }
-    },[latestBidder])
+    const requireAuth = (action) => {
+        if (!token) { toast.info("Sign in to continue."); return; }
+        if (!live) { toast.info("Auction is not live yet!"); return; }
+        action();
+    };
+
+    const displayBid = details?.currentBid === 0 ? details?.startingPrice : details?.currentBid;
+
+    // ── auction status badge ──────────────────────────────────────────────────
+    const AuctionStatusPill = () => {
+        if (sold) return (
+            <span className="inline-flex items-center gap-1.5 bg-semantic-success/15 border border-semantic-success/30 text-semantic-success text-xs font-semibold px-3 py-1 rounded-full">
+                Sold
+            </span>
+        );
+        if (withdrawn) return (
+            <span className="inline-flex items-center gap-1.5 bg-text-disabled/10 border border-text-disabled/20 text-text-disabled text-xs font-semibold px-3 py-1 rounded-full">
+                Withdrawn
+            </span>
+        );
+        if (live) return (
+            <span className="inline-flex items-center gap-1.5 bg-status-live/15 border border-status-live/30 text-status-live text-xs font-semibold px-3 py-1 rounded-full">
+                <span className="w-1.5 h-1.5 rounded-full bg-status-live animate-pulse" />
+                Live
+            </span>
+        );
+        return (
+            <span className="inline-flex items-center gap-1.5 bg-status-upcoming/15 border border-status-upcoming/30 text-status-upcoming text-xs font-semibold px-3 py-1 rounded-full">
+                <FontAwesomeIcon icon={faClock} className="text-[10px]" />
+                Upcoming
+            </span>
+        );
+    };
 
     return (
         <>
             <Header />
-            <div className="bg-black">
-                <div className="w-full container mx-auto relative">
-                    <div className="text-center font-lora text-3xl text-white py-10">
-                        Product Detail
+            <div className="bg-background-primary min-h-screen pt-20">
+                {/* ── back nav ─────────────────────────────────────────────── */}
+                <div className="border-b border-white/5 bg-background-secondary/40">
+                    <div className="container mx-auto px-6 py-3">
+                        <button
+                            onClick={() => navigate(-1)}
+                            className="flex items-center gap-2 text-sm text-text-secondary hover:text-white transition-colors duration-150"
+                        >
+                            <FontAwesomeIcon icon={faArrowLeft} className="text-xs" />
+                            Back
+                        </button>
                     </div>
-                    {prodNotFound ? <>
-                        <div className="text-center font-lora text-3xl text-white py-10">
-                            Product Not Found
-                        </div></> : <>
-                        <div className="grid md:grid-cols-2 grid-cols-1 text-white gap-10">
-                            <div className="bg-[#AD8B73] border-0 rounded-2xl relative overflow-hidden group cursor-pointer">
-                                <img src={`${Helper.BASE_URL}${details?.images}`} alt={`${details?.name}`} />
-                                <div className="absolute bottom-0 w-full">
-                                    <div className="mb-4 px-5 md:w-1/2 w-full">
-                                        {auctionEnd ? (
-                                            <div className="bg-[#212121] text-white p-2 text-center">
-                                                Auction Time Has Ended
+                </div>
+
+                <div className="container mx-auto px-6 py-10">
+                    {prodNotFound ? (
+                        <div className="flex flex-col items-center justify-center py-32 text-center">
+                            <div className="w-14 h-14 rounded-full bg-background-elevated border border-white/5 flex items-center justify-center mb-5">
+                                <FontAwesomeIcon icon={faTag} className="text-text-disabled text-lg" />
+                            </div>
+                            <p className="font-lora text-white text-2xl font-bold mb-2">Product Not Found</p>
+                            <p className="text-text-secondary text-sm mb-6">This auction may have been removed or the link is incorrect.</p>
+                            <Link to="/">
+                                <button className="px-6 py-2.5 bg-primary hover:bg-primary-dark text-white text-sm font-semibold rounded-lg transition-all">
+                                    Back to Home
+                                </button>
+                            </Link>
+                        </div>
+                    ) : (
+                        <>
+                            {/* ── main grid ──────────────────────────────────── */}
+                            <div className="grid md:grid-cols-2 grid-cols-1 gap-8 items-start">
+                                {/* Left — image + countdown */}
+                                <div className="flex flex-col gap-4">
+                                    <div className="relative rounded-2xl overflow-hidden bg-background-elevated border border-white/5 aspect-[4/3]">
+                                        <img
+                                            src={`${Helper.BASE_URL}${details?.images}`}
+                                            alt={details?.name}
+                                            className="w-full h-full object-cover"
+                                            onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/800x600/212121/A27B5C?text=No+Image"; }}
+                                        />
+                                        {/* Live / upcoming badge */}
+                                        <div className="absolute top-3 left-3">
+                                            <AuctionStatusPill />
+                                        </div>
+                                    </div>
+
+                                    {/* Countdown card */}
+                                    <div className="bg-background-elevated rounded-2xl border border-white/5 px-5 py-4">
+                                        {auctionEnd || sold ? (
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 rounded-full bg-text-disabled/10 flex items-center justify-center">
+                                                    <FontAwesomeIcon icon={faClock} className="text-text-disabled text-xs" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs text-text-disabled uppercase tracking-wider">Auction</p>
+                                                    <p className="text-white font-semibold text-sm">Has Ended</p>
+                                                </div>
                                             </div>
                                         ) : countdownDate ? (
-                                            <>
-                                                {sold ? (<>
-                                                    <div className="bg-[#212121] text-white p-2 text-center">
-                                                        Auction Has Ended
-                                                    </div>
-                                                </>) : (<>
-                                                    <div className="bg-[#212121] text-white p-2 text-center">
-                                                        {live ? 'Live' : 'Auction Till Live'}
-                                                    </div>
-                                                    <Countdown
-                                                    key={countdownDate} // Force re-render when countdownDate changes 
-                                                    date={countdownDate} renderer={renderer}  onComplete={handleCountdownComplete} />
-                                                </>)
-                                                }
-
-                                            </>
-                                        ) : (
-                                            <div>Loading...</div>
-                                        )}
-                                    </div>
-                                </div>
-                                {/* <div className="bg-[#212121] w-full px-5 py-3 text-white flex justify-between">
-                            <div className="flex flex-col">
-                                <div className="text-xl">Samsung Galaxy</div>
-                                <div className="text-lg">Current Bid: Rs. 30,000</div>
-                            </div>
-                            <div className="flex flex-col">
-                                <div className="text-xl">No. of Bids: 10</div>
-                                <div className="text-lg">Active Bidders: 3</div>
-                            </div>
-                        </div> */}
-                            </div>
-                            <div className=" flex flex-col bg-[#242628] border-0 rounded-2xl relative overflow-hidden group  p-5 gap-y-5">
-                                <div className="flex justify-between items-center">
-                                <div className="text-3xl text-white">
-                                    {details?.name}
-                                </div>
-                                {latestBidderUsername && <span className="text-end">Latest Bidder: {latestBidderUsername} </span>}
-                                </div>
-                                <div className="flex justify-between items-center border border-y-2 border-black border-x-0 py-2">
-                                    <div className="flex items-center gap-x-2">
-                                        <div className="bg-black px-3 py-2 rounded-full">
-                                            <FontAwesomeIcon className="text-base" icon={faUser} />
-                                        </div>
-                                        <div>
-                                            <div className="text-base hover:text-[#AD8B73]">
-                                                {creator?.userName}
-                                            </div>
-                                            <Link to={`/user/${creator?.userName}`}>
-                                                <div className="text-sm hover:text-[#AD8B73]">
-                                                    Contact Seller
-                                                </div>
-                                            </Link>
-                                        </div>
-                                    </div>
-                                    {/* <ReactStars
-                                count={5}
-                                onChange={ratingChanged}
-                                size={24}
-                                activeColor="#fff"
-                            /> */}
-                                </div>
-                                <div className="grid grid-cols-2 gap-y-3">
-                                    <div>Current Bid</div>
-                                    <div className="text-end">Rs. {details?.currentBid == 0 ? details?.startingPrice : details?.currentBid}</div>
-                                    <div>No. of Bids</div>
-                                    <div className="text-end">{details?.numberOfBids}</div>
-                                    <div>Active Bidders</div>
-                                    <div className="flex justify-end">
-                                        <div onClick={openBidderModal} className="bg-[#A27B5C] hover:bg-[#6c3c3c] text-white py-2 px-4 rounded-md text-center w-20 cursor-pointer">
-                                            View
-                                        </div>
-                                    </div>
-                                    {isBidderModal && (
-                                        <ActiveBiddersModal
-                                            activeBidders={usernames}
-                                            onClose={closeBidderModal}
-                                        />
-                                    )}
-                                    <div>Max Price</div>
-                                    <div className="text-end">Rs. {details?.buyNowPrice}</div>
-                                </div>
-                                {same ? <></>
-                                    :
-                                    <>
-                                        <div className="grid grid-cols-2 gap-y-3 items-center">
-                                            <div>Quantity ({details?.quantity} Available)</div>
-                                            <div className="grid grid-cols-3 bg-black text-center py-2 items-center">
-                                                <button
-                                                    onClick={decrementQuantity}
-                                                    className="text-base hover:text-[#AD8B73]"
-                                                >
-                                                    -
-                                                </button>
-                                                <div className="text-base border-0 border-x">{quantity}</div>
-                                                <button
-                                                    disabled={(quantity >= details?.quantity) ? true : false}
-                                                    onClick={incrementQuantity}
-                                                    className="text-base hover:text-[#AD8B73]"
-                                                >
-                                                    +
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </>}
-                                {same ?
-                                    <>{sold ? <>
-                                    <div>
-                                                Auction has been won by <Link to={`/user/${winnerUserName}`}><span className="hover:text-amber-800">{winnerUserName}</span></Link> at Rs. {finalPrice}
-                                            </div>
-                                    </> : <>
-                                    <div className="flex gap-x-5">
-                                            <div
-                                                onClick={openModal}
-                                                className='cursor-pointer border-0 rounded-md bg-[#A27B5C] hover:bg-[#6c3c3c] text-white text-center text-[15px] py-2 px-5 w-1/2'>
-                                                Edit Product
-                                            </div>
-                                            <div onClick={openDeleteModal} className='cursor-pointer border-0 rounded-md bg-[#A27B5C] hover:bg-[#6c3c3c] text-white text-center text-[15px] py-2 px-5 w-1/2'>
-                                                Delete Product
-                                            </div>
-                                        </div>
-                                        {showModal && (
-                                            <EditProductModal
-                                                product={details}
-                                                onClose={closeModal}
-                                                onSave={handleSave}
-                                            />
-                                        )}
-                                        <ConfirmationModal
-                                            isOpen={openDModal}
-                                            onClose={closeDeleteModal}
-                                            onConfirm={handleDeleteProduct}
-                                        /></>}
-                                        
-                                    </>
-                                    :
-                                    <>
-                                        {sold ? (<>{buyerId == userid ? (<>
-                                            <div className="flex gap-x-5">
-                                                <Link to={'/checkout'}>
-                                                <div className='cursor-pointer border-0 rounded-md bg-[#A27B5C] hover:bg-[#6c3c3c] text-white text-center text-[15px] py-2 px-5 w-full'>
-                                                    Proceed to checkout <FontAwesomeIcon icon={faCartShopping} />
-                                                </div>
-                                                </Link>
-                                            </div>
-                                        </>) : (<>
                                             <div>
-                                                Auction has been won by <Link to={`/user/${winnerUserName}`}><span className="hover:text-amber-800">{winnerUserName}</span></Link> at Rs. {finalPrice}
+                                                <p className="text-xs text-text-disabled uppercase tracking-wider mb-3">
+                                                    {live ? "Ends in" : "Starts in"}
+                                                </p>
+                                                <Countdown
+                                                    key={countdownDate}
+                                                    date={countdownDate}
+                                                    renderer={CountdownRenderer}
+                                                    onComplete={handleCountdownComplete}
+                                                />
                                             </div>
-                                            
-                                        </>)}</>) : (<>
-                                            <div className="flex gap-x-5">
-                                                <div onClick={handleBidNowClick} className='cursor-pointer border-0 rounded-md bg-[#A27B5C] hover:bg-[#6c3c3c] text-white text-center text-[15px] py-2 px-5 w-1/2'>
-                                                    Bid Now <FontAwesomeIcon icon={faGavel} />
-                                                </div>
-                                                <div onClick={handleBuyNowClick} className='cursor-pointer border-0 rounded-md bg-[#A27B5C] hover:bg-[#6c3c3c] text-white text-center text-[15px] py-2 px-5 w-1/2'>
-                                                    Buy Now <FontAwesomeIcon icon={faCartShopping} />
-                                                </div>
+                                        ) : (
+                                            <div className="flex items-center gap-2 text-text-disabled text-sm">
+                                                <div className="w-4 h-4 rounded-full border-2 border-text-disabled/30 border-t-text-disabled animate-spin" />
+                                                Loading…
                                             </div>
-                                            <ConfirmModal
-                                                show={buyNowModal} 
-                                                onClose={handleClose} 
-                                                onConfirm={handleConfirm} 
-                                                maxPrice={maxPrice}
-                                            />
-                                            {/* <div className="flex gap-x-5">
-                                                <div onClick={handleAddToCartClick} className='cursor-pointer border-0 rounded-md bg-[#A27B5C] hover:bg-[#6c3c3c] text-white text-center text-[15px] py-2 px-5 w-full'>
-                                                    Add to Cart <FontAwesomeIcon icon={faCartShopping} />
-                                                </div>
-                                            </div> */}
-                                            </>)}
-                                    </>}
-                            </div>
-                        </div>
-                        <div className="pt-10">
-                            <div className="flex flex-col bg-[#242628] border-0 rounded-2xl p-5">
-                                <div className="text-2xl font-lora text-white">
-                                    About the Product
-                                </div>
-                                <div className="text-white my-2">
-                                    {details?.description}
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <div className="text-2xl font-lora text-white mt-4">
-                                        Product Specifications
+                                        )}
                                     </div>
-                                    {/* {same ? 
-                            <>
-                            <button className="bg-[#A27B5C] hover:bg-[#6c3c3c] text-white py-2 px-4 rounded-md">
-                                Edit
-                            </button>
-                            </> : 
-                            <>
-                            </>} */}
+
+                                    {/* Latest bidder ticker */}
+                                    <AnimatePresence>
+                                        {latestBidderUsername && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: -6 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0 }}
+                                                className="bg-background-elevated rounded-xl border border-white/5 px-4 py-3 flex items-center gap-3"
+                                            >
+                                                <div className="w-7 h-7 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center shrink-0">
+                                                    <FontAwesomeIcon icon={faFire} className="text-primary text-xs" />
+                                                </div>
+                                                <p className="text-sm text-text-secondary">
+                                                    Latest bid by <span className="text-white font-semibold">{latestBidderUsername}</span>
+                                                </p>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
                                 </div>
-                                {prodDetails && (
-                                    <>
-                                        <div className="grid grid-cols-2 gap-4 text-white my-2">
-                                            <div><span className="font-bold">Battery Power:</span> {prodDetails.battery_power} mAh</div>
-                                            <div><span className="font-bold">Bluetooth:</span> {prodDetails.blue ? "Yes" : "No"}</div>
-                                            {/* <div><span className="font-bold">Clock Speed:</span> {prodDetails.clock_speed} GHz</div> */}
-                                            <div><span className="font-bold">Dual SIM:</span> {prodDetails.dual_sim ? "Yes" : "No"}</div>
-                                            <div><span className="font-bold">Front Camera:</span> {prodDetails.fc} MP</div>
-                                            {/* <div><span className="font-bold">4G Support:</span> {prodDetails.four_g ? "Yes" : "No"}</div> */}
-                                            <div><span className="font-bold">Internal Memory:</span> {prodDetails.int_memory} GB</div>
-                                            {/* <div><span className="font-bold">Mobile Depth:</span> {prodDetails.m_dep} cm</div> */}
-                                            {/* <div><span className="font-bold">Weight:</span> {prodDetails.mobile_wt} g</div> */}
-                                            <div><span className="font-bold">Number of Cores:</span> {prodDetails.n_cores}</div>
-                                            <div><span className="font-bold">Primary Camera:</span> {prodDetails.pc} MP</div>
-                                            <div><span className="font-bold">Pixel Height:</span> {prodDetails.px_height} px</div>
-                                            <div><span className="font-bold">Pixel Width:</span> {prodDetails.px_width} px</div>
-                                            <div><span className="font-bold">RAM:</span> {prodDetails.ram} MB</div>
-                                            {/* <div><span className="font-bold">Screen Height:</span> {prodDetails.sc_h} cm</div> */}
-                                            {/* <div><span className="font-bold">Screen Width:</span> {prodDetails.sc_w} cm</div> */}
-                                            {/* <div><span className="font-bold">Talk Time:</span> {prodDetails.talk_time} hours</div> */}
-                                            {/* <div><span className="font-bold">3G Support:</span> {prodDetails.three_g ? "Yes" : "No"}</div> */}
-                                            {/* <div><span className="font-bold">Touch Screen:</span> {prodDetails.touch_screen ? "Yes" : "No"}</div> */}
-                                            <div><span className="font-bold">WiFi Support:</span> {prodDetails.wifi ? "Yes" : "No"}</div>
-                                            <div className="col-span-2">
-                                                <span className="font-bold">Price Range:</span> {(() => {
-                                                    switch (prodDetails.price_range) {
-                                                        case 0: return "Rs. 5000 - Rs. 15000";
-                                                        case 1: return "Rs. 15000 - Rs. 25000";
-                                                        case 2: return "Rs. 25000 - Rs. 50000";
-                                                        case 3: return "Rs. 50000+";
-                                                        default: return "Unknown";
-                                                    }
-                                                })()}
+
+                                {/* Right — details panel */}
+                                <div className="flex flex-col gap-5">
+                                    {/* Title */}
+                                    <div>
+                                        <h1 className="font-lora font-bold text-3xl text-white leading-tight mb-2">{details?.name}</h1>
+                                        <div className="flex items-center gap-2 text-sm text-text-secondary">
+                                            <FontAwesomeIcon icon={faLayerGroup} className="text-xs" />
+                                            <span>{details?.category || "Uncategorized"}</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Seller */}
+                                    <div className="bg-background-elevated rounded-xl border border-white/5 px-4 py-3 flex items-center gap-3">
+                                        <div className="w-9 h-9 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                                            <FontAwesomeIcon icon={faUser} className="text-primary text-sm" />
+                                        </div>
+                                        <div className="min-w-0">
+                                            <p className="text-xs text-text-disabled uppercase tracking-wider">Seller</p>
+                                            <p className="text-white text-sm font-semibold truncate">{creator?.userName}</p>
+                                        </div>
+                                        <Link to={`/user/${creator?.userName}`} className="ml-auto shrink-0">
+                                            <span className="text-xs text-primary hover:text-primary-light transition-colors flex items-center gap-1">
+                                                Contact <FontAwesomeIcon icon={faChevronRight} className="text-[10px]" />
+                                            </span>
+                                        </Link>
+                                    </div>
+
+                                    {/* Bid stats */}
+                                    <div className="bg-background-elevated rounded-xl border border-white/5 overflow-hidden">
+                                        <div className="grid grid-cols-3 divide-x divide-white/5">
+                                            <div className="px-4 py-4">
+                                                <p className="text-[10px] text-text-disabled uppercase tracking-wider mb-1">
+                                                    {details?.currentBid === 0 ? "Starting at" : "Current bid"}
+                                                </p>
+                                                <p className="text-primary font-lora font-bold text-lg">Rs. {displayBid}</p>
+                                            </div>
+                                            <div className="px-4 py-4">
+                                                <p className="text-[10px] text-text-disabled uppercase tracking-wider mb-1">Total bids</p>
+                                                <p className="text-white font-bold text-lg">{details?.numberOfBids ?? 0}</p>
+                                            </div>
+                                            <div className="px-4 py-4">
+                                                <p className="text-[10px] text-text-disabled uppercase tracking-wider mb-1">Bidders</p>
+                                                <button
+                                                    onClick={() => setIsBidderModal(true)}
+                                                    className="flex items-center gap-1.5 text-white font-bold text-lg group"
+                                                >
+                                                    <FontAwesomeIcon icon={faUsers} className="text-sm text-text-disabled group-hover:text-primary transition-colors" />
+                                                    {activeBidders.length}
+                                                </button>
                                             </div>
                                         </div>
-                                    </>
-                                )}
+                                        <div className="border-t border-white/5 px-4 py-3 flex items-center justify-between">
+                                            <span className="text-xs text-text-disabled">Buy Now Price</span>
+                                            <span className="text-sm text-white font-semibold">Rs. {details?.buyNowPrice}</span>
+                                        </div>
+                                    </div>
 
+                                    {/* Quantity (buyer only) */}
+                                    {!same && (
+                                        <div className="bg-background-elevated rounded-xl border border-white/5 px-4 py-3 flex items-center justify-between">
+                                            <div>
+                                                <p className="text-xs text-text-disabled uppercase tracking-wider">Quantity</p>
+                                                <p className="text-text-secondary text-sm mt-0.5">{details?.quantity} available</p>
+                                            </div>
+                                            <div className="flex items-center gap-3 bg-background-primary rounded-lg px-3 py-2 border border-white/8">
+                                                <button
+                                                    onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                                                    className="text-white w-5 text-center hover:text-primary transition-colors"
+                                                >−</button>
+                                                <span className="text-white font-semibold w-5 text-center">{quantity}</span>
+                                                <button
+                                                    onClick={() => setQuantity((q) => Math.min(details?.quantity, q + 1))}
+                                                    disabled={quantity >= details?.quantity}
+                                                    className="text-white w-5 text-center hover:text-primary transition-colors disabled:opacity-30"
+                                                >+</button>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Trust badge */}
+                                    <div className="flex items-center gap-2 text-xs text-text-disabled">
+                                        <FontAwesomeIcon icon={faShieldHalved} className="text-semantic-success" />
+                                        Secure bidding · Verified seller · Buyer protection
+                                    </div>
+
+                                    {/* Action buttons */}
+                                    {same ? (
+                                        sold ? (
+                                            <div className="bg-background-elevated rounded-xl border border-white/5 px-4 py-4 text-sm text-text-secondary">
+                                                Won by{" "}
+                                                <Link to={`/user/${winnerUserName}`}>
+                                                    <span className="text-primary hover:text-primary-light transition-colors font-semibold">{winnerUserName}</span>
+                                                </Link>{" "}
+                                                at <span className="text-white font-semibold">Rs. {finalPrice}</span>
+                                            </div>
+                                        ) : (
+                                            <div className="flex gap-3">
+                                                <button
+                                                    onClick={() => setShowModal(true)}
+                                                    className="flex-1 py-3 bg-background-elevated hover:bg-white/8 border border-white/10 hover:border-white/20 text-white text-sm font-semibold rounded-xl transition-all duration-150"
+                                                >
+                                                    Edit Product
+                                                </button>
+                                                <button
+                                                    onClick={() => setOpenDModal(true)}
+                                                    className="flex-1 py-3 bg-semantic-error/10 hover:bg-semantic-error/20 border border-semantic-error/20 hover:border-semantic-error/40 text-semantic-error text-sm font-semibold rounded-xl transition-all duration-150"
+                                                >
+                                                    Delete
+                                                </button>
+                                            </div>
+                                        )
+                                    ) : sold ? (
+                                        buyerId === userid ? (
+                                            <Link to="/checkout">
+                                                <button className="w-full py-3.5 bg-semantic-success hover:bg-semantic-success/80 text-white font-semibold text-sm rounded-xl transition-all duration-150 flex items-center justify-center gap-2">
+                                                    <FontAwesomeIcon icon={faCartShopping} />
+                                                    Proceed to Checkout
+                                                </button>
+                                            </Link>
+                                        ) : (
+                                            <div className="bg-background-elevated rounded-xl border border-white/5 px-4 py-4 text-sm text-text-secondary">
+                                                Won by{" "}
+                                                <Link to={`/user/${winnerUserName}`}>
+                                                    <span className="text-primary hover:text-primary-light font-semibold">{winnerUserName}</span>
+                                                </Link>{" "}
+                                                at <span className="text-white font-semibold">Rs. {finalPrice}</span>
+                                            </div>
+                                        )
+                                    ) : (
+                                        <div className="flex gap-3">
+                                            <button
+                                                onClick={() => requireAuth(() => setIsModalOpen(true))}
+                                                className="flex-1 py-3.5 bg-primary hover:bg-primary-dark text-white font-semibold text-sm rounded-xl transition-all duration-150 hover:shadow-glow active:scale-[0.98] flex items-center justify-center gap-2"
+                                            >
+                                                <FontAwesomeIcon icon={faGavel} />
+                                                Bid Now
+                                            </button>
+                                            <button
+                                                onClick={() => requireAuth(() => setBuyNowModal(true))}
+                                                className="flex-1 py-3.5 bg-background-elevated hover:bg-white/8 border border-white/10 hover:border-white/20 text-white font-semibold text-sm rounded-xl transition-all duration-150 flex items-center justify-center gap-2"
+                                            >
+                                                <FontAwesomeIcon icon={faBolt} />
+                                                Buy Now
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                        </div>
-                    </>}
-                    <RecentAuction />
+
+                            {/* ── About + Specs ───────────────────────────────── */}
+                            <div className="mt-10 grid md:grid-cols-2 grid-cols-1 gap-6">
+                                {/* About */}
+                                <div className="bg-background-elevated rounded-2xl border border-white/5 p-6">
+                                    <h2 className="font-lora font-bold text-xl text-white mb-4">About This Item</h2>
+                                    <p className="text-text-secondary text-sm leading-relaxed">{details?.description}</p>
+                                </div>
+
+                                {/* Specs */}
+                                {prodDetails && (
+                                    <div className="bg-background-elevated rounded-2xl border border-white/5 p-6">
+                                        <h2 className="font-lora font-bold text-xl text-white mb-4">Specifications</h2>
+                                        <SpecRow label="Battery" value={`${prodDetails.battery_power} mAh`} />
+                                        <SpecRow label="Bluetooth" value={prodDetails.blue ? "Yes" : "No"} />
+                                        <SpecRow label="Dual SIM" value={prodDetails.dual_sim ? "Yes" : "No"} />
+                                        <SpecRow label="Front Camera" value={`${prodDetails.fc} MP`} />
+                                        <SpecRow label="Internal Memory" value={`${prodDetails.int_memory} GB`} />
+                                        <SpecRow label="CPU Cores" value={prodDetails.n_cores} />
+                                        <SpecRow label="Primary Camera" value={`${prodDetails.pc} MP`} />
+                                        <SpecRow label="Resolution" value={`${prodDetails.px_width} × ${prodDetails.px_height} px`} />
+                                        <SpecRow label="RAM" value={`${prodDetails.ram} MB`} />
+                                        <SpecRow label="WiFi" value={prodDetails.wifi ? "Yes" : "No"} />
+                                        <SpecRow label="Price Range" value={PRICE_RANGE_MAP[prodDetails.price_range] ?? "Unknown"} />
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* ── Recent auctions ─────────────────────────────── */}
+                            <div className="mt-10">
+                                <RecentAuction />
+                            </div>
+                        </>
+                    )}
                 </div>
+
+                {/* ── Modals ──────────────────────────────────────────────────── */}
                 <BidModal
                     isOpen={isModalOpen}
-                    onClose={handleCloseModal}
+                    onClose={() => setIsModalOpen(false)}
                     productName={details?.name}
                     startingPrice={details?.startingPrice}
                     currentBid={details?.currentBid}
                     bidIncrement={details?.bidIncrement}
                     onBidSubmit={handleBidSubmit}
                 />
-                <ToastContainer
-                    position="top-right"
-                    autoClose={5000}
-                    theme="dark"
+                {showModal && (
+                    <EditProductModal
+                        product={details}
+                        onClose={() => setShowModal(false)}
+                        onSave={() => { toast.success("Product updated!"); setRefreshKey((k) => k + 1); }}
+                    />
+                )}
+                <ConfirmationModal
+                    isOpen={openDModal}
+                    onClose={() => setOpenDModal(false)}
+                    onConfirm={handleDeleteProduct}
                 />
+                <ConfirmModal
+                    show={buyNowModal}
+                    onClose={() => setBuyNowModal(false)}
+                    onConfirm={handleConfirm}
+                    maxPrice={maxPrice}
+                />
+                {isBidderModal && (
+                    <ActiveBiddersModal
+                        activeBidders={usernames}
+                        onClose={() => setIsBidderModal(false)}
+                    />
+                )}
+
+                <ToastContainer position="top-right" autoClose={5000} theme="dark" />
             </div>
             <Footer />
         </>
-    )
-}
-export default ProductDetails
+    );
+};
+
+export default ProductDetails;

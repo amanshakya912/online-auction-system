@@ -13,7 +13,6 @@ const Homepage = () => {
                 <LiveAuction /> 
                 <UpcomingAuction />   
                 <RecentAuction />    
-                {/* <UpcomingAuction />        */}
             <Footer/>
         </>
     )

@@ -1,8 +1,10 @@
-# React + Vite
+# Frontend — Online Auction System
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+See the [root README](../README.md) for full setup instructions.
 
-Currently, two official plugins are available:
+### Available Scripts
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- `npm run dev` — Start Vite dev server (port 5173)
+- `npm run build` — Production build
+- `npm run lint` — Run ESLint
+- `npm run preview` — Preview production build

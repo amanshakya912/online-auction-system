@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import { useRef } from 'react';
 import emailjs from '@emailjs/browser';
 import Header from "../Components/Header"
 import Footer from "../Components/Footer"
@@ -14,15 +14,15 @@ const Contact = () => {
         e.preventDefault();
 
         emailjs
-            .sendForm('service_6fz34ad', 'template_07zr6dn', form.current, {
-                publicKey: 'Rh6z7mvspTAgCMd4r',
+            .sendForm(import.meta.env.VITE_EMAILJS_SERVICE_ID, import.meta.env.VITE_EMAILJS_TEMPLATE_ID, form.current, {
+                publicKey: import.meta.env.VITE_EMAILJS_PUBLIC_KEY,
             })
             .then(
                 () => {
-                    console.log('SUCCESS!');
+                    // Email sent successfully
                 },
-                (error) => {
-                    console.log('FAILED...', error.text);
+                () => {
+                    // Email send failed
                 },
             );
     };

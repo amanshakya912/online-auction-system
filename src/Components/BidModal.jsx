@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 const BidModal = ({ isOpen, onClose, productName, startingPrice, currentBid, bidIncrement,  onBidSubmit }) => {
     // Initialize bidAmount based on currentBid and startingPrice
     const [bidAmount, setBidAmount] = useState(currentBid ? currentBid + bidIncrement : startingPrice);
+    const [isLoading, setIsLoading] = useState(false);
 
     // Update bidAmount when currentBid or bidIncrement changes
     useEffect(() => {
@@ -13,13 +14,18 @@ const BidModal = ({ isOpen, onClose, productName, startingPrice, currentBid, bid
         setBidAmount(Number(e.target.value));
     };
 
-    const handleBidSubmit = () => {
+    const handleBidSubmit = async () => {
         if (bidAmount < startingPrice) {
             alert("Bid amount must be higher than the starting price.");
             return;
         }
-        onBidSubmit(bidAmount);
-        onClose(); // Close modal after bid submission
+        setIsLoading(true);
+        try {
+            await onBidSubmit(bidAmount);
+        } finally {
+            setIsLoading(false);
+            onClose(); // Close modal after bid submission
+        }
     };
 
     const incrementBid = () => {
@@ -70,13 +76,21 @@ const BidModal = ({ isOpen, onClose, productName, startingPrice, currentBid, bid
                 <div className="flex justify-between">
                     <button
                         onClick={handleBidSubmit}
-                        className="bg-[#AD8B73] text-white py-2 px-4 rounded-md hover:bg-[#6c3c3c]"
+                        disabled={isLoading}
+                        className="bg-[#AD8B73] text-white py-2 px-4 rounded-md hover:bg-[#6c3c3c] disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-x-2"
                     >
-                        Submit Bid
+                        {isLoading && (
+                            <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                            </svg>
+                        )}
+                        {isLoading ? 'Submitting...' : 'Submit Bid'}
                     </button>
                     <button
                         onClick={onClose}
-                        className="bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-400"
+                        disabled={isLoading}
+                        className="bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-400 disabled:opacity-60 disabled:cursor-not-allowed"
                     >
                         Close
                     </button>

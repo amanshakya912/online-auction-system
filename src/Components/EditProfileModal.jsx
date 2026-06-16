@@ -9,15 +9,12 @@ const EditProfileModal = ({ onClose, initialData, refreshKey }) => {
         defaultValues: initialData // Set initial data if provided (e.g., from the current profile)
     });
     const onSubmit = async (data) => {
-        console.log(data);
         try {
             const res = await Api.editUser(data)
-            console.log(res)
             refreshKey((prevKey) => prevKey + 1);
             onClose()
             toast.success('Profile Updated Successfully!')
         } catch (error) {
-            console.log('err', error)
             if (axios.isAxiosError(error)) {
                 if (error.response && error.response.data && error.response.data.error) {
                     toast.error(error.response.data.error);

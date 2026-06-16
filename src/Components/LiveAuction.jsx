@@ -1,132 +1,161 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faGavel, faStar } from "@fortawesome/free-solid-svg-icons";
-import img1 from "../images/mobile1.png";
+import { faGavel, faArrowRight, faFire } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useState } from "react";
 import Countdown from "react-countdown";
 import Api from "../utils/Api";
 import { Link } from "react-router-dom";
 import Helper from "../utils/Helper";
-import Loader from "./Loader";
+import { SkeletonsGrid } from "./SkeletonLoader";
+import { motion } from "framer-motion";
+
+const CountdownRenderer = ({ days, hours, minutes, seconds }) => (
+    <div className="flex items-center gap-1">
+        {[
+            { val: days, label: "D" },
+            { val: hours, label: "H" },
+            { val: minutes, label: "M" },
+            { val: seconds, label: "S" },
+        ].map(({ val, label }, i) => (
+            <div key={label} className="flex items-center gap-1">
+                <div className="flex flex-col items-center min-w-[36px] bg-black/40 rounded-md px-2 py-1">
+                    <span className="font-lora font-bold text-white text-base leading-none">
+                        {String(val).padStart(2, "0")}
+                    </span>
+                    <span className="text-[9px] text-text-disabled uppercase tracking-wider mt-0.5">{label}</span>
+                </div>
+                {i < 3 && <span className="text-text-disabled text-sm font-bold mb-2">:</span>}
+            </div>
+        ))}
+    </div>
+);
+
 const LiveAuction = () => {
-  const [show, setShow] = useState(false);
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const renderer = ({ days, hours, minutes, seconds }) => {
+    const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                setLoading(true);
+                const res = await Api.getProducts();
+                const currentTime = new Date();
+                const liveProducts = res.filter((p) => {
+                    const end = new Date(p.auctionEndTime);
+                    const start = new Date(p.auctionStartTime);
+                    return currentTime < end && currentTime >= start && p.status !== "Sold";
+                });
+                setProducts(liveProducts);
+            } catch (err) {
+                console.error("Error fetching products:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchProducts();
+    }, []);
+
     return (
-      <div className="grid grid-cols-4 bg-[#212121] text-white p-2 text-center">
-        <div className="col-span-1 border-0 border-r">{days}D</div>
-        <div className="col-span-1 border-0 border-r">{hours}H</div>
-        <div className="col-span-1 border-0 border-r">{minutes}M</div>
-        <div className="col-span-1">{seconds}S</div>
-      </div>
-    );
-  };
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setLoading(true);
-        const res = await Api.getProducts();
-        const currentTime = new Date();
-        const liveProducts = res.filter((product) => {
-          const endTime = new Date(product.auctionEndTime);
-          const startTime = new Date(product.auctionStartTime);
-          return (
-            currentTime < endTime &&
-            currentTime >= startTime &&
-            product.status !== "Sold"
-          );
-        });
-        console.log(liveProducts);
-        setProducts(liveProducts);
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching products:", error);
-      }
-    };
-
-    fetchProducts();
-  }, []);
-  return (
-    <>
-      <div className="bg-black">
-        <div className="w-full container mx-auto relative">
-          <div className="text-center font-lora md:text-3xl text-2xl text-white py-10">
-            Live Auctions
-          </div>
-          {loading ? (
-            <>
-              <Loader />
-            </>
-          ) : (
-            <>
-              {products.length > 0 ? (
-                <>
-                  <div className="grid lg:grid-cols-2 grid-cols-1 text-white gap-5 mx-5 md:mx-0">
-                    {products.map((product) => (
-                      <div className="col-span-1">
-                        <div className="bg-[#AD8B73] border-0 rounded-2xl relative overflow-hidden group cursor-pointer hover:scale-105 transition-all duration-300 h-full flex flex-col justify-between">
-                          <img src={`${Helper.BASE_URL}${product.images[0]}`} />
-                          <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-80 transition-opacity duration-300 h-full w-full flex justify-center items-center">
-                            {/* <div className="absolute top-3 right-4">
-                                    <div onClick={()=>setShow(!show)} className={`${ !show ? 'text-white' : 'text-[#A27B5C]'}`}>
-                                        <FontAwesomeIcon icon={faStar} />
-                                    </div>
-                                </div> */}
-                            <Link to={`/${product.slug}`}>
-                              <div className="cursor-pointer border-0 rounded-md bg-[#A27B5C] hover:bg-[#6c3c3c] text-white text-[20px] py-2 px-5">
-                                Bid Now <FontAwesomeIcon icon={faGavel} />
-                              </div>
-                            </Link>
-                          </div>
-                          <div>
-                          <div className="mb-4 px-5 md:w-1/2 w-full">
-                            <Countdown
-                              date={new Date(product.auctionEndTime)}
-                              renderer={renderer}
-                            />
-                          </div>
-                          <div className="bg-[#212121] w-full px-5 py-3 text-white flex justify-between">
-                            <div className="flex flex-col">
-                              <div className="text-xl">{product.name}</div>
-                              <div className="text-lg">
-                                Current Bid: {product.currentBid}
-                              </div>
-                            </div>
-                            <div className="flex flex-col">
-                              <div className="text-xl">
-                                No. of Bids: {product.numberOfBids}
-                              </div>
-                              <div className="text-lg">
-                                Active Bidders: {product.activeBidders.length}
-                              </div>
-                            </div>
-                          </div>
-                          </div>
+        <section className="bg-background-primary py-16">
+            <div className="container mx-auto px-6">
+                {/* Section header */}
+                <div className="flex items-end justify-between mb-10">
+                    <div>
+                        <div className="flex items-center gap-2 mb-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-status-live animate-pulse" />
+                            <span className="text-xs font-semibold text-status-live uppercase tracking-[0.18em]">Live Now</span>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="text-white text-center py-10">
-                    No live auctions available.
-                  </div>
-                </>
-              )}
-            </>
-          )}
+                        <h2 className="font-lora font-bold text-3xl md:text-4xl text-white">Live Auctions</h2>
+                    </div>
+                    <Link
+                        to="/browse-auction/live"
+                        className="hidden sm:flex items-center gap-1.5 text-sm text-text-secondary hover:text-primary transition-colors duration-150 group"
+                    >
+                        View all
+                        <FontAwesomeIcon icon={faArrowRight} className="text-xs group-hover:translate-x-0.5 transition-transform duration-150" />
+                    </Link>
+                </div>
 
-          <div className="flex justify-center items-center py-10">
-            <Link to="/browse-auction/live">
-              <div className="flex items-center border-0 rounded-md px-6 py-2 bg-white text-black cursor-pointer hover:bg-[#6c3c3c] hover:text-white">
-                Show All
-              </div>
-            </Link>
-          </div>
-        </div>
-      </div>
-    </>
-  );
+                {loading ? (
+                    <SkeletonsGrid count={2} />
+                ) : products.length > 0 ? (
+                    <div className="grid lg:grid-cols-2 grid-cols-1 gap-5">
+                        {products.map((product, i) => (
+                            <motion.div
+                                key={product._id}
+                                initial={{ opacity: 0, y: 16 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.4, delay: i * 0.1 }}
+                                className="group relative bg-background-elevated rounded-2xl overflow-hidden border border-white/5 hover:border-white/10 transition-all duration-300 hover:shadow-raised flex flex-col"
+                            >
+                                {/* Image */}
+                                <div className="relative overflow-hidden aspect-[16/9]">
+                                    <img
+                                        src={`${Helper.BASE_URL}${product.images[0]}`}
+                                        alt={product.name}
+                                        onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/800x450/212121/A27B5C?text=No+Image"; }}
+                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                    />
+                                    {/* Live badge */}
+                                    <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-black/60 backdrop-blur-sm border border-status-live/30 rounded-full px-3 py-1">
+                                        <FontAwesomeIcon icon={faFire} className="text-status-live text-xs" />
+                                        <span className="text-xs font-semibold text-status-live">Live</span>
+                                    </div>
+                                    {/* Countdown overlay */}
+                                    <div className="absolute bottom-3 left-3">
+                                        <Countdown
+                                            date={new Date(product.auctionEndTime)}
+                                            renderer={CountdownRenderer}
+                                        />
+                                    </div>
+                                    {/* Hover overlay */}
+                                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                                        <Link to={`/${product.slug}`}>
+                                            <button className="flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary-dark text-white font-semibold text-sm rounded-lg transition-all duration-150 hover:shadow-glow active:scale-95">
+                                                <FontAwesomeIcon icon={faGavel} />
+                                                Bid Now
+                                            </button>
+                                        </Link>
+                                    </div>
+                                </div>
+
+                                {/* Card info */}
+                                <div className="px-5 py-4 flex items-center justify-between gap-4">
+                                    <div className="min-w-0">
+                                        <p className="text-white font-semibold text-base truncate">{product.name}</p>
+                                        <p className="text-text-secondary text-sm mt-0.5">
+                                            Current bid: <span className="text-primary font-semibold">{product.currentBid}</span>
+                                        </p>
+                                    </div>
+                                    <div className="text-right shrink-0">
+                                        <p className="text-white text-sm font-medium">{product.numberOfBids}</p>
+                                        <p className="text-text-disabled text-xs mt-0.5">Bids</p>
+                                    </div>
+                                    <div className="text-right shrink-0">
+                                        <p className="text-white text-sm font-medium">{product.activeBidders?.length ?? 0}</p>
+                                        <p className="text-text-disabled text-xs mt-0.5">Bidders</p>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="text-center py-20 text-text-secondary">
+                        <FontAwesomeIcon icon={faGavel} className="text-3xl text-text-disabled mb-4 block" />
+                        No live auctions at the moment.
+                    </div>
+                )}
+
+                {/* Mobile "view all" */}
+                <div className="sm:hidden flex justify-center mt-8">
+                    <Link to="/browse-auction/live">
+                        <button className="flex items-center gap-2 px-6 py-2.5 border border-white/10 hover:border-white/20 text-text-primary text-sm font-medium rounded-lg transition-all duration-150 hover:bg-white/5">
+                            Show All Live Auctions
+                        </button>
+                    </Link>
+                </div>
+            </div>
+        </section>
+    );
 };
+
 export default LiveAuction;

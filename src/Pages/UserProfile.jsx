@@ -7,6 +7,7 @@ import 'swiper/css';
 import Helper from '../utils/Helper';
 import EditProfileModal from '../Components/EditProfileModal';
 import ConfirmationModal from '../Components/ConfirmationModal';
+import OrderHistory from '../Components/OrderHistory';
 const UserProfile = () => {
     const { username } = useParams();
     const [user, setUser] = useState(null);
@@ -26,7 +27,6 @@ const UserProfile = () => {
     const handleDeleteAccount = async () => {
         try {
             const response = await Api.deleteUser(); // Call your delete API endpoint
-            console.log('Account deleted:', response.data);
             localStorage.removeItem('token');
             localStorage.removeItem('username');
             localStorage.removeItem('id');
@@ -41,11 +41,9 @@ const UserProfile = () => {
         const fetchUser = async () => {
             try {
                 const response = await Api.getUser(username);
-                console.log(response)
                 setUserId(response._id)
                 setUser(response);
             } catch (err) {
-                console.log('err', err)
                 setUser(null)
             }
         };
@@ -79,14 +77,12 @@ const UserProfile = () => {
                 setCurrentAuctions(current);
                 setUpcomingAuctions(upcoming);
             } catch (err) {
-                console.log("Error fetching products:", err);
                 setAuctions(null);
             }
         };
         if (userId) {
             fetchProductsByUser();
             if (userId == id) {
-                console.log('same', userId, id)
                 setSame(true)
             }
         }
@@ -307,6 +303,7 @@ const UserProfile = () => {
                                     :
                                     <> No Auctions Available </>}
                             </div>
+                            {same && <OrderHistory />}
                         </> :
                         <>
                             <div className='mt-20'>
