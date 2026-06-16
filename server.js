@@ -69,10 +69,10 @@ app.use(helmet({
 }));
 app.disable('x-powered-by');
 
-// Rate limiting — 100 requests per 15 minutes per IP
+// Rate limiting — 300 requests per 15 minutes per IP
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 300,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many requests, please try again later.' },
@@ -95,7 +95,11 @@ app.use('/api', adminRoutes);
 app.get('/', (req, res) => {
   res.json({ mssg: 'welcome' })
 })
-app.use('/uploads', express.static('uploads'));
+app.use('/uploads', (req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  express.static('uploads')(req, res, next);
+});
 
 // Centralized error handling middleware
 app.use(errorHandler);
@@ -136,7 +140,7 @@ const checkExpiredAuctions = async () => {
       }
 
       try {
-        await product.save();
+        await product.save({ validateModifiedOnly: true });
       } catch (saveErr) {
         console.warn('Skipping product %s — save failed:', product._id, saveErr.message);
         continue;
